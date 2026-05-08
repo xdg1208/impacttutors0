@@ -86,7 +86,7 @@ export default async function StudentDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="premium-card p-6 border border-border bg-card">
+        <div className="premium-card rounded-2xl p-6 border border-border bg-card">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-section rounded-xl"><BookOpen className="text-blue-500" /></div>
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted">Enrolled</span>
@@ -94,7 +94,7 @@ export default async function StudentDashboard() {
           <p className="text-muted text-sm">Active Courses</p>
           <h3 className="text-3xl font-bold mt-1">{courseCount}</h3>
         </div>
-        <div className="premium-card p-6 border border-border bg-card">
+        <div className="premium-card rounded-2xl p-6 border border-border bg-card">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-section rounded-xl"><CalendarIcon className="text-emerald-500" /></div>
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted">Upcoming</span>
@@ -102,7 +102,7 @@ export default async function StudentDashboard() {
           <p className="text-muted text-sm">Scheduled Sessions</p>
           <h3 className="text-3xl font-bold mt-1">{sessionCount}</h3>
         </div>
-        <div className="premium-card p-6 border border-border bg-card">
+        <div className="premium-card rounded-2xl p-6 border border-border bg-card">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-section rounded-xl"><Clock className="text-amber-500" /></div>
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted">Profile</span>
@@ -119,14 +119,14 @@ export default async function StudentDashboard() {
           <div className="space-y-4">
             <h2 className="text-xl font-bold" style={{ fontFamily: "'Lora', serif" }}>Upcoming Sessions</h2>
             {!sessions || sessions.length === 0 ? (
-              <div className="premium-card p-12 text-center border border-border bg-card space-y-3">
+              <div className="premium-card rounded-2xl p-12 text-center border border-border bg-card space-y-3">
                 <CalendarIcon className="mx-auto text-muted" size={32} />
                 <p className="text-sm text-muted">No sessions scheduled yet. Your tutor will set up sessions soon.</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {sessions.map((session) => (
-                  <div key={session.id} className="premium-card p-5 border border-border bg-card hover:border-primary/30 transition-all flex items-center justify-between group">
+                  <div key={session.id} className="premium-card rounded-2xl p-5 border border-border bg-card hover:border-primary/30 transition-all flex items-center justify-between group">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-section rounded-xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                         <CalendarIcon size={24} />
@@ -164,14 +164,14 @@ export default async function StudentDashboard() {
           <div className="space-y-4">
             <h2 className="text-xl font-bold" style={{ fontFamily: "'Lora', serif" }}>My Courses</h2>
             {!courses || courses.length === 0 ? (
-              <div className="premium-card p-12 text-center border border-border bg-card space-y-3">
+              <div className="premium-card rounded-2xl p-12 text-center border border-border bg-card space-y-3">
                 <BookOpen className="mx-auto text-muted" size={32} />
                 <p className="text-sm text-muted">No courses enrolled yet. An administrator will assign you shortly.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {courses.map((course) => (
-                  <div key={course.id} className="premium-card p-5 border border-border bg-card hover:border-primary/30 transition-all space-y-3">
+                  <div key={course.id} className="premium-card rounded-2xl p-5 border border-border bg-card hover:border-primary/30 transition-all space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
                         <h4 className="font-bold text-sm">{course.title}</h4>
@@ -207,7 +207,7 @@ export default async function StudentDashboard() {
         {/* Academic Profile Sidebar */}
         <div className="space-y-4">
           <h2 className="text-xl font-bold" style={{ fontFamily: "'Lora', serif" }}>Academic Profile</h2>
-          <div className="premium-card p-6 border border-border bg-card space-y-6">
+          <div className="premium-card rounded-2xl p-6 border border-border bg-card space-y-6">
             <div className="space-y-4">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-muted">Full Name</span>

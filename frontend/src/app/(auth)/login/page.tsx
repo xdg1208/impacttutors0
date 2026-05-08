@@ -32,7 +32,7 @@ function LoginForm() {
       {/* Left: Image */}
       <div className="hidden lg:block relative rounded-l-2xl overflow-hidden">
         <Image
-          src="/images/hero2.jpg"
+          src="/images/hero2.png"
           alt="Student learning"
           fill
           className="object-cover"
@@ -45,7 +45,7 @@ function LoginForm() {
       </div>
 
       {/* Right: Form */}
-      <div className="premium-card lg:rounded-l-none p-8 md:p-10 flex flex-col justify-center">
+      <div className="premium-card lg:rounded-r-2xl p-8 md:p-10 flex flex-col justify-center">
         <div className="space-y-2 mb-8">
           <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Lora', serif" }}>Sign In</h1>
           <p className="text-muted text-sm">Access your Impact Tutors dashboard</p>

@@ -85,7 +85,7 @@ interface StepCardProps {
 
 function StepCard({ number, title, description, icon }: StepCardProps) {
   return (
-    <div className="premium-card bg-card p-7 relative group h-full">
+    <div className="premium-card rounded-2xl bg-card p-7 relative group h-full">
       <div className="absolute -top-3 -right-3 w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center font-black text-sm shadow-md shadow-primary/25">
         {number}
       </div>

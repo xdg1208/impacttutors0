@@ -68,7 +68,7 @@ export default function StudentApplyPage() {
         </div>
 
         <div className="grid lg:grid-cols-1 gap-0 items-stretch animate-fade-in-up">
-          <div className="premium-card p-8 md:p-12">
+          <div className="premium-card rounded-2xl p-8 md:p-12">
             <form onSubmit={handleSubmit} className="space-y-8">
               {error && (
                 <div className="p-4 bg-red-50 border border-red-200 text-red-600 text-sm font-semibold rounded-xl">

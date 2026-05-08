@@ -81,7 +81,7 @@ export default async function TutorDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="premium-card p-6 border border-border bg-card">
+        <div className="premium-card rounded-2xl p-6 border border-border bg-card">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-section rounded-xl"><Users className="text-blue-500" /></div>
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted">Assigned</span>
@@ -89,7 +89,7 @@ export default async function TutorDashboard() {
           <p className="text-muted text-sm">Active Students</p>
           <h3 className="text-3xl font-bold mt-1">{courseCount}</h3>
         </div>
-        <div className="premium-card p-6 border border-border bg-card">
+        <div className="premium-card rounded-2xl p-6 border border-border bg-card">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-section rounded-xl"><CalendarIcon className="text-emerald-500" /></div>
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted">Upcoming</span>
@@ -97,7 +97,7 @@ export default async function TutorDashboard() {
           <p className="text-muted text-sm">Scheduled Sessions</p>
           <h3 className="text-3xl font-bold mt-1">{sessionCount}</h3>
         </div>
-        <div className="premium-card p-6 border border-border bg-card">
+        <div className="premium-card rounded-2xl p-6 border border-border bg-card">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-section rounded-xl"><Clock className="text-amber-500" /></div>
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted">Total</span>
@@ -114,14 +114,14 @@ export default async function TutorDashboard() {
           <div className="space-y-4">
             <h2 className="text-xl font-bold" style={{ fontFamily: "'Lora', serif" }}>Upcoming Sessions</h2>
             {!sessions || sessions.length === 0 ? (
-              <div className="premium-card p-12 text-center border border-border bg-card space-y-3">
+              <div className="premium-card rounded-2xl p-12 text-center border border-border bg-card space-y-3">
                 <CalendarIcon className="mx-auto text-muted" size={32} />
                 <p className="text-sm text-muted">No sessions scheduled. Admin will create sessions for your courses.</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {sessions.map((session) => (
-                  <div key={session.id} className="premium-card p-5 border border-border bg-card hover:border-primary/30 transition-all flex items-center justify-between group">
+                  <div key={session.id} className="premium-card rounded-2xl p-5 border border-border bg-card hover:border-primary/30 transition-all flex items-center justify-between group">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-section rounded-xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                         <CalendarIcon size={24} />
@@ -159,12 +159,12 @@ export default async function TutorDashboard() {
           <div className="space-y-4">
             <h2 className="text-xl font-bold" style={{ fontFamily: "'Lora', serif" }}>My Courses</h2>
             {!courses || courses.length === 0 ? (
-              <div className="premium-card p-12 text-center border border-border bg-card space-y-3">
+              <div className="premium-card rounded-2xl p-12 text-center border border-border bg-card space-y-3">
                 <BookOpen className="mx-auto text-muted" size={32} />
                 <p className="text-sm text-muted">No courses assigned yet. New assignments will appear here.</p>
               </div>
             ) : (
-              <div className="premium-card p-0 overflow-hidden border border-border bg-card">
+              <div className="premium-card rounded-2xl p-0 overflow-hidden border border-border bg-card">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
                     <thead>
@@ -214,7 +214,7 @@ export default async function TutorDashboard() {
         {/* Right Sidebar: WhatsApp + Info */}
         <div className="space-y-4">
           <h2 className="text-xl font-bold" style={{ fontFamily: "'Lora', serif" }}>Tutor Info</h2>
-          <div className="premium-card p-6 border border-border bg-card space-y-4">
+          <div className="premium-card rounded-2xl p-6 border border-border bg-card space-y-4">
             <div className="space-y-3">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-muted">Name</span>
@@ -231,7 +231,7 @@ export default async function TutorDashboard() {
             </div>
           </div>
 
-          <div className="premium-card p-6 border border-border bg-card space-y-3">
+          <div className="premium-card rounded-2xl p-6 border border-border bg-card space-y-3">
             <h3 className="font-bold text-sm">WhatsApp Community</h3>
             <p className="text-[11px] text-muted leading-relaxed">Join our tutor community for updates, training resources, and direct admin communication.</p>
             <a

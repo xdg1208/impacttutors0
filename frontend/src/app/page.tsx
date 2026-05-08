@@ -76,7 +76,7 @@ export default async function Home() {
           <div className="relative animate-slide-in-right flex items-center justify-center ">
             <div className="relative w-[80%] aspect-[4/5] md:aspect-square rounded-full overflow-hidden shadow-2xl shadow-primary/10  ">
               <Image
-                src="/images/hero1.jpg"
+                src="/images/hero1.png"
                 alt="Student learning with Impact Tutors"
                 fill
                 className="object-cover"
@@ -198,7 +198,7 @@ export default async function Home() {
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Gold Package */}
-            <div className="premium-card bg-card p-10 flex flex-col border-2 border-primary/20 hover:border-primary/40 transition-all duration-500 relative overflow-hidden group">
+            <div className="premium-card rounded-2xl bg-card p-10 flex flex-col border-2 border-primary/20 hover:border-primary/40 transition-all duration-500 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-12 -mt-12 group-hover:bg-primary/10 transition-colors" />
               <div className="relative z-10 w-full">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-widest mb-6 border border-primary/20">
@@ -231,7 +231,7 @@ export default async function Home() {
             </div>
 
             {/* Ruby Package */}
-            <div className="premium-card bg-card p-10 flex flex-col border-2 border-accent/20 hover:border-accent/40 transition-all duration-500 relative overflow-hidden group">
+            <div className="premium-card rounded-2xl bg-card p-10 flex flex-col border-2 border-accent/20 hover:border-accent/40 transition-all duration-500 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-bl-full -mr-12 -mt-12 group-hover:bg-accent/10 transition-colors" />
               <div className="relative z-10 w-full">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-[10px] font-black uppercase tracking-widest mb-6 border border-accent/20">
@@ -240,7 +240,7 @@ export default async function Home() {
                 <h3 className="text-3xl font-bold mb-2 text-foreground" style={{ fontFamily: "'Lora', serif" }}>Ruby Package</h3>
                 <p className="text-sm text-muted mb-8">Comprehensive skill & group learning</p>
                 <div className="mb-8 flex items-baseline gap-1">
-                  <span className="text-4xl font-black text-accent">$80</span>
+                  <span className="text-4xl font-black text-accent">$50</span>
                   <span className="text-muted font-medium">/ month</span>
                 </div>
                 <ul className="space-y-4 mb-10">
@@ -275,7 +275,7 @@ export default async function Home() {
           <div className="relative animate-fade-in-up">
             <div className="relative w-full aspect-[4/3] rounded-[2rem] overflow-hidden shadow-xl">
               <Image
-                src="/images/hero0.jpg"
+                src="/images/hero0.png"
                 alt="Student achieving academic excellence"
                 fill
                 className="object-cover"
@@ -434,7 +434,7 @@ interface CategoryCardProps {
 
 function CategoryCard({ title, description, icon, color, href }: CategoryCardProps) {
   return (
-    <Link href={href} className="premium-card bg-card p-8 flex flex-col h-full group">
+    <Link href={href} className="premium-card rounded-2xl bg-card p-8 flex flex-col h-full group">
       <div className={`w-14 h-14 ${color} text-white rounded-2xl flex items-center justify-center mb-6 shadow-md group-hover:scale-105 transition-transform duration-300`}>
         {icon}
       </div>
@@ -449,7 +449,7 @@ function CategoryCard({ title, description, icon, color, href }: CategoryCardPro
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   return (
-    <details className="premium-card bg-card group border-border hover:border-primary/20 transition-all duration-300">
+    <details className="premium-card rounded-2xl bg-card group border-border hover:border-primary/20 transition-all duration-300">
       <summary className="p-6 flex items-center justify-between cursor-pointer font-bold list-none">
         <span className="pr-4">{question}</span>
         <div className="flex-shrink-0 w-6 h-6 rounded-full border border-border flex items-center justify-center text-muted group-open:bg-primary group-open:text-white group-open:border-primary transition-all duration-300">

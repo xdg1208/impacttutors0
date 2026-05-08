@@ -115,7 +115,7 @@ export default function TutorApplyPage() {
           </div>
 
           {/* Form Side */}
-          <div className="premium-card bg-card p-8 md:p-12 animate-slide-in-right relative">
+          <div className="premium-card rounded-2xl bg-card p-8 md:p-12 animate-slide-in-right relative">
             <h2 className="text-2xl font-bold mb-8" style={{ fontFamily: "'Lora', serif" }}>Tutor Application</h2>
             {error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 text-sm font-semibold rounded-xl animate-shake">

@@ -31,17 +31,17 @@ export default async function AboutPage() {
 
           <div className="grid grid-cols-2 gap-4 animate-slide-in-right">
             <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg">
-              <Image src="/images/hero1.jpg" alt="Student learning" fill className="object-cover" />
+              <Image src="/images/hero1.png" alt="Student learning" fill className="object-cover" />
             </div>
             <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg mt-8">
-              <Image src="/images/hero0.jpg" alt="Student achieving" fill className="object-cover" />
+              <Image src="/images/hero0.png" alt="Student achieving" fill className="object-cover" />
             </div>
           </div>
         </div>
 
         {/* Vision & Mission */}
         <div className="grid md:grid-cols-2 gap-8 mb-20">
-          <div className="premium-card p-8 space-y-4">
+          <div className="premium-card rounded-2xl p-8 space-y-4">
             <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/></svg>
             </div>
@@ -50,7 +50,7 @@ export default async function AboutPage() {
               To be the leading platform for 1-on-1 personalized learning, empowering the next generation of global leaders, thinkers, and innovators.
             </p>
           </div>
-          <div className="premium-card p-8 space-y-4">
+          <div className="premium-card rounded-2xl p-8 space-y-4">
             <div className="w-12 h-12 bg-accent/10 text-accent rounded-xl flex items-center justify-center">
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd"/></svg>
             </div>
@@ -78,7 +78,7 @@ export default async function AboutPage() {
                 "Flexible Global Scheduling",
                 "Strategic Exam Preparation",
               ].map((item) => (
-                <div key={item} className="flex items-center gap-3 p-4 premium-card bg-card">
+                <div key={item} className="flex items-center gap-3 p-4 premium-card rounded-2xl bg-card">
                   <CheckCircle2 className="text-primary flex-shrink-0" size={22} />
                   <span className="font-semibold text-sm">{item}</span>
                 </div>

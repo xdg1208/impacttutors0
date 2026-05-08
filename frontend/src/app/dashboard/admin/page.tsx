@@ -126,7 +126,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         {/* ========== APPLICATIONS TAB ========== */}
         {tab === "applications" && (
           <div className="space-y-6">
-            <div className="premium-card p-0 overflow-hidden">
+            <div className="premium-card rounded-2xl p-0 overflow-hidden">
               <div className="p-5 border-b border-border flex items-center justify-between">
                 <h2 className="text-lg font-bold" style={{ fontFamily: "'Lora', serif" }}>Pending Student Applications</h2>
               </div>
@@ -167,7 +167,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
               )}
             </div>
 
-            <div className="premium-card p-0 overflow-hidden">
+            <div className="premium-card rounded-2xl p-0 overflow-hidden">
               <div className="p-5 border-b border-border">
                 <h2 className="text-lg font-bold" style={{ fontFamily: "'Lora', serif" }}>Pending Tutor Applications</h2>
               </div>
@@ -213,7 +213,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         {/* ========== INVITES TAB ========== */}
         {tab === "invites" && (
           <div className="space-y-6">
-            <div className="premium-card p-6 space-y-4">
+            <div className="premium-card rounded-2xl p-6 space-y-4">
               <h3 className="font-bold text-sm uppercase tracking-widest text-muted">Generate Registration Code</h3>
               <form action={async (formData) => { "use server"; await generateInviteCode(formData); }} className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <input name="email" type="email" placeholder="Recipient's Email (optional)"
@@ -229,7 +229,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
               <p className="text-[10px] text-muted">Generate a single-use code to allow a student or tutor to register.</p>
             </div>
 
-            <div className="premium-card p-0 overflow-hidden">
+            <div className="premium-card rounded-2xl p-0 overflow-hidden">
               <div className="p-5 border-b border-border">
                 <h2 className="text-lg font-bold" style={{ fontFamily: "'Lora', serif" }}>Active Registration Codes</h2>
               </div>
@@ -279,9 +279,9 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         {tab === "students" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {(!students || students.length === 0) ? (
-              <div className="col-span-full p-12 text-center text-muted text-sm premium-card">No students found.</div>
+              <div className="col-span-full p-12 text-center text-muted text-sm premium-card rounded-2xl ">No students found.</div>
             ) : students.map((s) => (
-              <div key={s.id} className="premium-card p-5 space-y-3 hover:border-primary/30 transition-all">
+              <div key={s.id} className="premium-card rounded-2xl p-5 space-y-3 hover:border-primary/30 transition-all">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">{s.full_name?.charAt(0)}</div>
@@ -324,9 +324,9 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         {tab === "tutors" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {(!tutors || tutors.length === 0) ? (
-              <div className="col-span-full p-12 text-center text-muted text-sm premium-card">No tutors found.</div>
+              <div className="col-span-full p-12 text-center text-muted text-sm premium-card rounded-2xl">No tutors found.</div>
             ) : tutors.map((t) => (
-              <div key={t.id} className="premium-card p-5 space-y-3 hover:border-primary/30 transition-all">
+              <div key={t.id} className="premium-card rounded-2xl p-5 space-y-3 hover:border-primary/30 transition-all">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">{t.full_name?.charAt(0)}</div>
@@ -350,7 +350,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         {/* ========== COURSES TAB ========== */}
         {tab === "courses" && (
           <div className="space-y-6">
-            <div className="premium-card p-6 space-y-4">
+            <div className="premium-card rounded-2xl p-6 space-y-4">
               <h3 className="font-bold text-sm uppercase tracking-widest text-muted">Create New Course</h3>
               <form action={async (formData) => { "use server"; await createCourse(formData); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input name="title" placeholder="Course Title (e.g. GCSE Math)" required
@@ -374,9 +374,9 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
             </div>
 
             {!courses || courses.length === 0 ? (
-              <div className="premium-card p-12 text-center text-muted text-sm">No courses found.</div>
+              <div className="premium-card rounded-2xl p-12 text-center text-muted text-sm">No courses found.</div>
             ) : (
-              <div className="premium-card p-0 overflow-hidden">
+              <div className="premium-card rounded-2xl p-0 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
                     <thead><tr className="bg-section-alt/50 border-b border-border">
@@ -410,7 +410,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         {/* ========== SESSIONS TAB ========== */}
         {tab === "sessions" && (
           <div className="space-y-6">
-            <div className="premium-card p-6 space-y-4">
+            <div className="premium-card rounded-2xl p-6 space-y-4">
               <h3 className="font-bold text-sm uppercase tracking-widest text-muted">Create New Session</h3>
               <form action={async (formData) => { "use server"; await createSession(formData); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <select name="courseId" required className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary">
@@ -430,9 +430,9 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
             </div>
 
             {!sessions || sessions.length === 0 ? (
-              <div className="premium-card p-12 text-center text-muted text-sm">No sessions scheduled.</div>
+              <div className="premium-card rounded-2xl p-12 text-center text-muted text-sm">No sessions scheduled.</div>
             ) : (
-              <div className="premium-card p-0 overflow-hidden">
+              <div className="premium-card rounded-2xl p-0 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
                     <thead><tr className="bg-section-alt/50 border-b border-border">
@@ -469,7 +469,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
 
 function StatCard({ title, value, icon, color }: any) {
   return (
-    <div className="premium-card p-5 group hover:border-primary/30 transition-all">
+    <div className="premium-card rounded-2xl p-5 group hover:border-primary/30 transition-all">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <p className="text-[11px] font-bold uppercase tracking-widest text-muted">{title}</p>
