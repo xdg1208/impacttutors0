@@ -59,16 +59,6 @@ class TutorApplicationViewSet(viewsets.ModelViewSet):
         application.save()
         return Response({'status': 'application rejected'})
 
-class InviteCodeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = InviteCode
-        fields = '__all__'
-
-class ContactMessageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ContactMessage
-        fields = '__all__'
-
 class InviteCodeViewSet(viewsets.ModelViewSet):
     queryset = InviteCode.objects.all().order_by('-created_at')
     serializer_class = InviteCodeSerializer
