@@ -62,6 +62,8 @@ async function betterFetch<T>(endpoint: string, options: FetchOptions = {}): Pro
           invite_code: "Registration Code",
           password: "Password",
           phone: "Phone Number",
+          preferred_contact_method: "Preferred Contact Method",
+          contact_detail: "Contact Detail",
           non_field_errors: "Error",
         };
 

@@ -29,6 +29,8 @@ export default function TutorApplyPage() {
     fData.append("phone", formData.phone);
     fData.append("subjects", formData.subjects);
     fData.append("experience", formData.experience);
+    fData.append("preferredContactMethod", (formData as any).preferredContactMethod || "WhatsApp");
+    fData.append("contactDetail", (formData as any).contactDetail || "");
 
     try {
       const result = await submitTutorApplication(fData);
