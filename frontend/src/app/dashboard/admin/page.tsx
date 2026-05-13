@@ -8,6 +8,10 @@ import {
   approveApplication, rejectApplication, generateInviteCode, deleteInviteCode, 
   createCourse, createSession, toggleOnboardingStatus, activateAndEnroll
 } from "@/app/actions/admin";
+import ApplicationDetailManager from "@/components/admin/ApplicationDetailManager";
+import StudentDataManager from "@/components/admin/StudentDataManager";
+import TutorDataManager from "@/components/admin/TutorDataManager";
+import CourseDataManager from "@/components/admin/CourseDataManager";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -125,89 +129,10 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
 
         {/* ========== APPLICATIONS TAB ========== */}
         {tab === "applications" && (
-          <div className="space-y-6">
-            <div className="premium-card rounded-2xl p-0 overflow-hidden">
-              <div className="p-5 border-b border-border flex items-center justify-between">
-                <h2 className="text-lg font-bold" style={{ fontFamily: "'Lora', serif" }}>Pending Student Applications</h2>
-              </div>
-              {!studentApps || studentApps.length === 0 ? (
-                <div className="p-12 text-center text-muted text-sm">No pending student applications.</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead><tr className="bg-section-alt/50 border-b border-border">
-                      <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted">Student / Parent</th>
-                      <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted">Grade / Curriculum</th>
-                      <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted text-right">Actions</th>
-                    </tr></thead>
-                    <tbody className="divide-y divide-border">
-                      {studentApps.filter(a => a.status === 'pending').map((app) => (
-                        <tr key={app.id} className="hover:bg-section/5 transition-colors">
-                          <td className="px-5 py-4">
-                            <p className="text-sm font-bold">{app.student_name}</p>
-                            <p className="text-[11px] text-muted">{app.parent_name} • {app.email}</p>
-                          </td>
-                          <td className="px-5 py-4 text-xs">
-                            {app.grade_level} • {app.curriculum}
-                          </td>
-                          <td className="px-5 py-4">
-                            <div className="flex justify-end gap-2">
-                              <form action={async () => { "use server"; await approveApplication(app.id, 'student'); }}>
-                                <button className="px-3 py-1.5 bg-green-500/10 text-green-600 rounded-lg hover:bg-green-500 hover:text-white transition-all text-xs font-bold flex items-center gap-1.5">
-                                  <Check size={14} /> Approve
-                                </button>
-                              </form>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-
-            <div className="premium-card rounded-2xl p-0 overflow-hidden">
-              <div className="p-5 border-b border-border">
-                <h2 className="text-lg font-bold" style={{ fontFamily: "'Lora', serif" }}>Pending Tutor Applications</h2>
-              </div>
-              {!tutorApps || tutorApps.length === 0 ? (
-                <div className="p-12 text-center text-muted text-sm">No pending tutor applications.</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead><tr className="bg-section-alt/50 border-b border-border">
-                      <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted">Applicant</th>
-                      <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted">Bio Snippet</th>
-                      <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted text-right">Actions</th>
-                    </tr></thead>
-                    <tbody className="divide-y divide-border">
-                      {tutorApps.filter(a => a.status === 'pending').map((app) => (
-                        <tr key={app.id} className="hover:bg-section/5 transition-colors">
-                          <td className="px-5 py-4">
-                            <p className="text-sm font-bold">{app.full_name}</p>
-                            <p className="text-[11px] text-muted">{app.email}</p>
-                          </td>
-                          <td className="px-5 py-4 text-xs text-muted truncate max-w-[200px]">
-                            {app.experience}
-                          </td>
-                          <td className="px-5 py-4">
-                            <div className="flex justify-end gap-2">
-                              <form action={async () => { "use server"; await approveApplication(app.id, 'tutor'); }}>
-                                <button className="px-3 py-1.5 bg-green-500/10 text-green-600 rounded-lg hover:bg-green-500 hover:text-white transition-all text-xs font-bold flex items-center gap-1.5">
-                                  <Check size={14} /> Approve
-                                </button>
-                              </form>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
+          <ApplicationDetailManager 
+            studentApps={studentApps} 
+            tutorApps={tutorApps} 
+          />
         )}
 
         {/* ========== INVITES TAB ========== */}
@@ -277,74 +202,20 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
 
         {/* ========== STUDENTS TAB ========== */}
         {tab === "students" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(!students || students.length === 0) ? (
-              <div className="col-span-full p-12 text-center text-muted text-sm premium-card rounded-2xl ">No students found.</div>
-            ) : students.map((s) => (
-              <div key={s.id} className="premium-card rounded-2xl p-5 space-y-3 hover:border-primary/30 transition-all">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">{s.full_name?.charAt(0)}</div>
-                    <div>
-                      <p className="text-sm font-bold">{s.full_name}</p>
-                      <p className="text-[10px] text-muted">{s.email}</p>
-                    </div>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${s.is_onboarded ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
-                    {s.is_onboarded ? "Active" : "Waitlist"}
-                  </span>
-                </div>
-                <div className="pt-2 border-t border-border flex items-center justify-between">
-                   <p className="text-[10px] text-muted">Grade {s.grade_level || "7"} • British</p>
-                    {!s.is_onboarded && (
-                      <div className="space-y-2 mt-2 pt-3 border-t border-border/50">
-                        <p className="text-[10px] font-bold uppercase text-primary tracking-widest">Activate with Enrollment</p>
-                        <form action={async (formData) => { "use server"; await activateAndEnroll(formData); }} className="space-y-2">
-                          <input type="hidden" name="studentId" value={s.id} />
-                          <div className="flex gap-2">
-                            <select name="tutorId" className="flex-1 text-[10px] bg-section border border-border rounded-lg p-1.5 outline-none focus:ring-1 focus:ring-primary">
-                              <option value="">No Tutor</option>
-                              {tutors.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)}
-                            </select>
-                            <input name="courseTitle" placeholder="Course Title" className="flex-1 text-[10px] bg-section border border-border rounded-lg p-1.5 outline-none focus:ring-1 focus:ring-primary" />
-                          </div>
-                          <button className="w-full py-1.5 bg-primary text-white text-[10px] font-bold rounded-lg hover:shadow-md hover:shadow-primary/20 transition-all">
-                            Activate & Enroll
-                          </button>
-                        </form>
-                      </div>
-                    )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <StudentDataManager 
+            students={students} 
+            courses={courses} 
+            tutors={tutors} 
+          />
         )}
 
         {/* ========== TUTORS TAB ========== */}
         {tab === "tutors" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(!tutors || tutors.length === 0) ? (
-              <div className="col-span-full p-12 text-center text-muted text-sm premium-card rounded-2xl">No tutors found.</div>
-            ) : tutors.map((t) => (
-              <div key={t.id} className="premium-card rounded-2xl p-5 space-y-3 hover:border-primary/30 transition-all">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">{t.full_name?.charAt(0)}</div>
-                    <div>
-                      <p className="text-sm font-bold">{t.full_name}</p>
-                      <p className="text-[10px] text-muted">{t.email}</p>
-                    </div>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${t.is_onboarded ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
-                    {t.is_onboarded ? "Active" : "Pending"}
-                  </span>
-                </div>
-                <div className="pt-2 border-t border-border">
-                   <p className="text-[10px] text-muted">Specializes in Math, Physics</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <TutorDataManager 
+            tutors={tutors} 
+            courses={courses} 
+            students={students} 
+          />
         )}
 
         {/* ========== COURSES TAB ========== */}
@@ -357,53 +228,31 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
                   className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary" />
                 <input name="subject" placeholder="Subject (e.g. Mathematics)" required
                   className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary" />
-                <select name="studentId" className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary">
-                  <option value="">Assign Student (optional)</option>
-                  {students?.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
-                </select>
-                <select name="tutorId" className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary">
-                  <option value="">Assign Tutor (optional)</option>
-                  {tutors?.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)}
-                </select>
-                <input name="meetLink" placeholder="Google Meet Link (optional)"
-                  className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary" />
-                <button type="submit" className="px-6 py-2.5 bg-primary text-white rounded-lg text-sm font-bold hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2">
-                  <Plus size={16} /> Create Course
+                <div className="space-y-1">
+                  <select name="studentIds" multiple className="w-full px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary min-h-[100px]">
+                    {students?.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+                  </select>
+                  <p className="text-[9px] text-muted ml-1 font-bold">Hold Ctrl/Cmd to select multiple students</p>
+                </div>
+                <div className="space-y-4">
+                   <select name="tutorId" className="w-full px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary">
+                    <option value="">Assign Tutor (optional)</option>
+                    {tutors?.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)}
+                  </select>
+                  <input name="meetLink" placeholder="Zoom Meeting Link (optional)"
+                    className="w-full px-4 py-3 bg-section border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm" />
+                </div>
+                <button type="submit" className="md:col-span-2 px-6 py-3 bg-primary text-white rounded-lg text-sm font-bold hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2">
+                  <Plus size={16} /> Create New Course
                 </button>
               </form>
             </div>
 
-            {!courses || courses.length === 0 ? (
-              <div className="premium-card rounded-2xl p-12 text-center text-muted text-sm">No courses found.</div>
-            ) : (
-              <div className="premium-card rounded-2xl p-0 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead><tr className="bg-section-alt/50 border-b border-border">
-                      <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted">Course</th>
-                      <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted">Student</th>
-                      <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted">Tutor</th>
-                      <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted">Meet</th>
-                    </tr></thead>
-                    <tbody className="divide-y divide-border">
-                      {courses.map(c => (
-                        <tr key={c.id} className="hover:bg-section/5">
-                          <td className="px-5 py-4">
-                            <p className="text-sm font-bold">{c.title}</p>
-                            <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase">{c.status}</span>
-                          </td>
-                          <td className="px-5 py-4 text-sm">{c.student_name || "—"}</td>
-                          <td className="px-5 py-4 text-sm">{c.tutor_name || "—"}</td>
-                          <td className="px-5 py-4 text-xs">
-                            {c.meet_link ? <a href={c.meet_link} target="_blank" className="text-primary font-bold hover:underline">Link</a> : "—"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
+            <CourseDataManager 
+              courses={courses} 
+              students={students} 
+              tutors={tutors} 
+            />
           </div>
         )}
 

@@ -22,7 +22,7 @@ export default async function AboutPage() {
               Founded with a mission to bridge the gap in personalized education, Impact Tutors connects learners worldwide with expert educators who inspire excellence.
             </p>
             <Link
-              href={user ? "/dashboard" : "/signup"}
+              href={user ? "/dashboard" : "/student/apply"}
               className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-xl font-bold transition-all duration-300 hover:shadow-xl hover:shadow-primary/25"
             >
               {user ? "Go to Dashboard" : "Join Us →"}

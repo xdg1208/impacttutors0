@@ -41,7 +41,7 @@ export default async function HowItWorksPage() {
           <StepCard 
             number="03"
             title="Start Learning"
-            description="Join your personalized 1-on-1 session via Google Meet at your scheduled time."
+            description="Join your personalized 1-on-1 session via Zoom at your scheduled time."
             icon={<BookOpen size={28} />}
           />
           <StepCard 
@@ -64,7 +64,7 @@ export default async function HowItWorksPage() {
               Our admin team is standing by to match you with your perfect tutor. No marketplace stress, just personalized learning.
             </p>
             <Link
-              href={user ? "/dashboard" : "/signup"}
+              href={user ? "/dashboard" : "/student/apply"}
               className="inline-block px-8 py-4 bg-white text-primary rounded-xl font-bold hover:shadow-xl transition-all duration-300"
             >
               {user ? "Go to Your Dashboard" : "Get Started Today"}

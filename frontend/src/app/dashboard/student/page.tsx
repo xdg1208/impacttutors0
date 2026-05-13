@@ -148,7 +148,7 @@ export default async function StudentDashboard() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="p-2 bg-green-500/10 text-green-600 rounded-lg hover:bg-green-500 hover:text-white transition-all"
-                          title="Join Google Meet"
+                          title="Join Zoom Meeting"
                         >
                           <Video size={16} />
                         </a>

@@ -13,6 +13,8 @@ export async function submitStudentApplication(formData: FormData) {
     curriculum: formData.get("curriculum"),
     subjects: formData.get("subjects")?.toString().split(",").map(s => s.trim()),
     message: formData.get("message"),
+    preferred_contact_method: formData.get("preferredContactMethod"),
+    contact_detail: formData.get("contactDetail"),
   };
 
   try {
@@ -33,6 +35,8 @@ export async function submitTutorApplication(formData: FormData) {
     phone: formData.get("phone"),
     subjects: formData.get("subjects")?.toString().split(",").map(s => s.trim()),
     experience: formData.get("experience"),
+    preferred_contact_method: formData.get("preferredContactMethod"),
+    contact_detail: formData.get("contactDetail"),
   };
 
   try {

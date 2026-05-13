@@ -104,8 +104,8 @@ function LoginForm() {
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-border text-center">
-          <p className="text-sm text-muted">
+        <div className="mt-6 pt-6 border-t border-border text-center">
+          <p className="text-lg text-muted">
             Don&apos;t have an account?{" "}
             <Link href="/signup" className="text-primary font-bold hover:underline">
               Sign Up

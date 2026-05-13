@@ -41,10 +41,10 @@ export default async function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <Link
-                href={user ? "/dashboard" : "/signup"}
+                href={user ? "/dashboard" : "/student/apply"}
                 className="w-full sm:w-auto px-8 py-4 bg-primary text-white rounded-xl text-base font-bold hover:bg-primary/90 transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 flex items-center justify-center gap-2 group"
               >
-                {user ? "View Dashboard" : "Get Started"}
+                {user ? "View Dashboard" : "Become a Student"}
                 <ChevronRight className="group-hover:translate-x-0.5 transition-transform duration-300" size={18} />
               </Link>
               <Link
@@ -224,7 +224,7 @@ export default async function Home() {
                     Science Subjects
                   </li>
                 </ul>
-                <Link href={user ? "/dashboard" : "/signup"} className="w-full py-4 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-primary/25 transition-all">
+                <Link href={user ? "/dashboard" : "/student/apply"} className="w-full py-4 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-primary/25 transition-all">
                   {user ? "Go to Dashboard" : "Get Gold Plan"} <ChevronRight size={18} />
                 </Link>
               </div>
@@ -257,7 +257,7 @@ export default async function Home() {
                     Language & Group Classes
                   </li>
                 </ul>
-                <Link href={user ? "/dashboard" : "/signup"} className="w-full py-4 bg-accent text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-accent/25 transition-all">
+                <Link href={user ? "/dashboard" : "/student/apply"} className="w-full py-4 bg-accent text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-accent/25 transition-all">
                   {user ? "Go to Dashboard" : "Get Ruby Plan"} <ChevronRight size={18} />
                 </Link>
               </div>
@@ -319,7 +319,7 @@ export default async function Home() {
             </div>
 
             <Link
-              href={user ? "/dashboard" : "/signup"}
+              href={user ? "/dashboard" : "/student/apply"}
               className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-xl font-bold transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 group"
             >
               {user ? "Your Dashboard" : "Join Us"}
@@ -341,7 +341,7 @@ export default async function Home() {
           <div className="space-y-4">
             <FAQItem 
               question="How do the lessons work?" 
-              answer="Lessons are conducted live via 1-on-1 or small group sessions on Google Meet, Zoom, or Microsoft Teams. We prioritize an engaging experience." 
+              answer="Lessons are conducted live via 1-on-1 or small group sessions on Zoom. We prioritize an engaging experience." 
             />
             <FAQItem 
               question="What subjects and grade levels do you cover?" 
@@ -379,6 +379,45 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ── Testimonials Section ── */}
+      <section className="py-20 md:py-28 px-4 md:px-6 relative overflow-hidden">
+        <div className="absolute inset-0 dot-pattern -z-10" />
+        <div className="container mx-auto">
+          <div className="text-center mb-16 space-y-4">
+            <p className="text-sm font-bold text-primary uppercase tracking-[0.2em]">Testimonials</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">What our Community Says</h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <TestimonialCard 
+              quote="My son's grade improved within a month with Impact Tutors. Their Tutors are professionals."
+              author="Mr. Ayoola"
+              role="Parent"
+            />
+            <TestimonialCard 
+              quote="Multiplication table mastery has improved, He got the best student of the week in school."
+              author="MRS. Omodara Temidayo"
+              role="Parent"
+            />
+            <TestimonialCard 
+              quote="My grades in Mathematics has improved with good grades. Grade 10 looks easy with Impact Tutors."
+              author="Aloye Akinfenwa"
+              role="Student"
+            />
+            <TestimonialCard 
+              quote="My reading is now fluent with the help of my tutor, I can read without being scared of making mistakes. Thank you Impact Tutors."
+              author="Adesoye Wonderful"
+              role="Student"
+            />
+            <TestimonialCard 
+              quote="Working in a standard online tutoring company like Impact Tutors Online Academy gave me the liberty to teach with ease and comfort while the platform helps students bridge the learning gap without barrier."
+              author="Miss Olaniyi"
+              role="Tutor"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* ── Bottom CTA ── */}
       <section className="py-20 md:py-28 px-4 md:px-6">
         <div className="container mx-auto">
@@ -397,7 +436,7 @@ export default async function Home() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                 <Link
-                  href={user ? "/dashboard" : "/signup"}
+                  href={user ? "/dashboard" : "/student/apply"}
                   className="px-8 py-4 bg-white text-primary rounded-xl text-base font-bold transition-all duration-300 hover:shadow-xl group flex items-center justify-center gap-2"
                 >
                   {user ? "Go to My Dashboard" : "Start Learning Now"}
@@ -460,5 +499,29 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
         {answer}
       </div>
     </details>
+  );
+}
+
+function TestimonialCard({ quote, author, role }: { quote: string; author: string; role: string }) {
+  return (
+    <div className="premium-card rounded-2xl bg-card p-8 flex flex-col h-full border border-border hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 group">
+      <div className="flex gap-1 mb-4">
+        {[1, 2, 3, 4, 5].map((s) => (
+          <Star key={s} size={14} className="text-amber-400" fill="currentColor" />
+        ))}
+      </div>
+      <p className="text-muted leading-relaxed mb-8 flex-1 italic" style={{ fontFamily: "'Nunito', sans-serif" }}>
+        &ldquo;{quote}&rdquo;
+      </p>
+      <div className="flex items-center gap-4">
+        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+          {author[0]}
+        </div>
+        <div>
+          <h4 className="text-sm font-bold">{author}</h4>
+          <p className="text-[10px] text-primary font-bold uppercase tracking-widest">{role}</p>
+        </div>
+      </div>
+    </div>
   );
 }

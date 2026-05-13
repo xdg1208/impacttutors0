@@ -150,11 +150,40 @@ export default function TutorApplyPage() {
                   <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Phone Number</label>
                   <input 
                     type="tel" 
+                    name="phone"
                     required 
                     className="w-full px-5 py-3.5 bg-section border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm" 
                     placeholder="+234..."
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Preferred Contact</label>
+                  <select 
+                    name="preferredContactMethod"
+                    required 
+                    className="w-full px-5 py-3.5 bg-section border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm appearance-none"
+                    value={(formData as any).preferredContactMethod || "WhatsApp"}
+                    onChange={(e) => setFormData({...formData, preferredContactMethod: e.target.value} as any)}
+                  >
+                    <option value="WhatsApp">WhatsApp</option>
+                    <option value="Email">Email</option>
+                    <option value="Phone Call">Phone Call</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Contact Detail</label>
+                  <input 
+                    type="text" 
+                    name="contactDetail"
+                    required 
+                    className="w-full px-5 py-3.5 bg-section border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm" 
+                    placeholder="e.g. WhatsApp number"
+                    value={(formData as any).contactDetail || ""}
+                    onChange={(e) => setFormData({...formData, contactDetail: e.target.value} as any)}
                   />
                 </div>
               </div>

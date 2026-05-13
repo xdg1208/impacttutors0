@@ -109,6 +109,22 @@ export default function StudentApplyPage() {
                         className="w-full pl-11 pr-4 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 outline-none transition-all text-sm" />
                     </div>
                   </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Preferred Contact</label>
+                      <select name="preferredContactMethod" required className="w-full px-4 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 outline-none transition-all text-sm appearance-none">
+                        <option value="WhatsApp">WhatsApp</option>
+                        <option value="Email">Email</option>
+                        <option value="Phone Call">Phone Call</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Contact Detail</label>
+                      <input name="contactDetail" required placeholder="e.g. WhatsApp number"
+                        className="w-full px-4 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 outline-none transition-all text-sm" />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Student Information */}

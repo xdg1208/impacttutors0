@@ -48,7 +48,7 @@ class Course(models.Model):
     title = models.CharField(max_length=255)
     category = models.CharField(max_length=100)
     description = models.TextField()
-    student = models.ForeignKey(Profile, on_delete=models.SET_NULL, null=True, blank=True, related_name='courses_enrolled')
+    students = models.ManyToManyField(Profile, blank=True, related_name='courses_enrolled')
     tutor = models.ForeignKey(Profile, on_delete=models.SET_NULL, null=True, blank=True, related_name='courses_taught')
     meet_link = models.URLField(blank=True, null=True)
     status = models.CharField(max_length=20, default='active')
@@ -70,9 +70,8 @@ class StudentTutorAssignment(models.Model):
     ended_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['student', 'is_active'], name='unique_active_assignment', condition=models.Q(is_active=True))
-        ]
+        verbose_name = _('Student-Tutor Assignment')
+        verbose_name_plural = _('Student-Tutor Assignments')
 
     def __str__(self):
         return f"{self.student.full_name} -> {self.tutor.full_name}"
@@ -99,6 +98,11 @@ class InviteCode(models.Model):
     role = models.CharField(max_length=10, choices=UserRole.choices, default=UserRole.STUDENT)
     target_email = models.EmailField(blank=True, null=True)
     is_used = models.BooleanField(default=False)
+    
+    # Links to applications (The "Code as ID" logic)
+    student_application = models.ForeignKey('StudentApplication', on_delete=models.SET_NULL, null=True, blank=True, related_name='registration_codes')
+    tutor_application = models.ForeignKey('TutorApplication', on_delete=models.SET_NULL, null=True, blank=True, related_name='registration_codes')
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
@@ -132,6 +136,11 @@ class StudentApplication(models.Model):
     curriculum = models.CharField(max_length=100)
     subjects = models.JSONField(default=list) # List of subjects
     message = models.TextField(blank=True, null=True)
+    
+    # Contact Tracking
+    preferred_contact_method = models.CharField(max_length=50, default='Email') # Email, WhatsApp, Phone
+    contact_detail = models.CharField(max_length=255, blank=True, null=True) # The actual phone/whatsapp number
+    
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -151,9 +160,24 @@ class TutorApplication(models.Model):
     phone = models.CharField(max_length=50, blank=True, null=True)
     subjects = models.JSONField(default=list) # List of subjects
     experience = models.TextField(blank=True, null=True)
+    
+    # Contact Tracking
+    preferred_contact_method = models.CharField(max_length=50, default='Email')
+    contact_detail = models.CharField(max_length=255, blank=True, null=True)
+    
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.full_name} ({self.status})"
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    subject = models.CharField(max_length=255)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message from {self.name}: {self.subject}"

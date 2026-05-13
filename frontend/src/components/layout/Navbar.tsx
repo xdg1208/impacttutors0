@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "About", href: "/about" },
-  { name: "Apply for Tutoring", href: "/student/apply" },
+  { name: "Become a Student", href: "/student/apply" },
   { name: "Become a Tutor", href: "/tutor/apply" },
   { name: "How it Works", href: "/how-it-works" },
   { name: "Contact", href: "/contact" },
@@ -107,7 +107,7 @@ export default function Navbar() {
             href={user ? "/dashboard" : "/login"}
             className="px-6 py-2.5 bg-primary text-white rounded-full text-sm font-bold hover:bg-primary/90 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center gap-2 group"
           >
-            {user ? "Dashboard" : "Get Started"}
+            {user ? "Open Dashboard" : "Get Dashboard"}
             <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" />
           </Link>
         </div>
@@ -161,7 +161,7 @@ export default function Navbar() {
                 className="mt-4 w-full py-4 bg-primary text-white text-center rounded-xl font-bold transition-all duration-300 hover:shadow-lg hover:shadow-primary/20"
                 onClick={() => setIsOpen(false)}
               >
-                {user ? "Dashboard" : "Get Started"}
+                {user ? "Open Dashboard" : "Get Dashboard"}
               </Link>
             </div>
           </motion.div>

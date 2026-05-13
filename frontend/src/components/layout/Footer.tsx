@@ -79,14 +79,15 @@ export default function Footer() {
                 <Phone size={16} />
               </div>
               <div>
-                <p className="text-[11px] text-slate-500 mb-0.5 uppercase tracking-wider">Call Us</p>
-                <a href="tel:+2348136564639" className="text-sm font-medium hover:text-primary transition-colors duration-300">
-                  +234 813 656 4639
-                </a>
-                <span className="text-slate-600 px-1">/</span>
-                <a href="tel:+2348146265396" className="text-sm font-medium hover:text-primary transition-colors duration-300">
-                   +234 814 626 5396
-                </a>
+                <p className="text-[11px] text-slate-500 mb-0.5 uppercase tracking-wider">Contact Us</p>
+                <div className="flex flex-col gap-1">
+                  <a href="https://wa.me/2347040599401" target="_blank" className="text-sm font-medium hover:text-primary transition-colors duration-300 flex items-center gap-1.5">
+                    WhatsApp: 07040599401
+                  </a>
+                  <a href="tel:+2347014524715" className="text-sm font-medium hover:text-primary transition-colors duration-300">
+                    Call: 07014524715
+                  </a>
+                </div>
               </div>
             </li>
             <li className="flex items-start gap-3 group">

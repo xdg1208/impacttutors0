@@ -1,6 +1,30 @@
-import { Mail, Phone, MapPin, Globe } from "lucide-react";
+"use client";
+
+import { Mail, Phone, MapPin, Globe, Send, CheckCircle2, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { submitContactMessage } from "@/app/actions/contact";
 
 export default function ContactPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    const formData = new FormData(event.currentTarget);
+    const result = await submitContactMessage(formData);
+
+    setIsSubmitting(false);
+    if (result.success) {
+      setIsSuccess(true);
+    } else {
+      setError(result.error || "Something went wrong.");
+    }
+  }
+
   return (
     <div className="pt-28 pb-20 px-4 md:px-6">
       <div className="container mx-auto">
@@ -27,8 +51,14 @@ export default function ContactPage() {
               <ContactItem 
                 icon={<Phone size={22} />}
                 title="Call Us"
-                content="+234 813 656 4639 / +234 814 626 5396"
-                href="tel:+2348136564639"
+                content="07014524715"
+                href="tel:+2347014524715"
+              />
+              <ContactItem 
+                icon={<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>}
+                title="WhatsApp"
+                content="07040599401"
+                href="https://wa.me/2347040599401"
               />
               <ContactItem 
                 icon={<MapPin size={22} />}
@@ -52,31 +82,70 @@ export default function ContactPage() {
           </div>
 
           {/* Right: Form */}
-          <div className="premium-card rounded-2xl bg-card p-8 md:p-10 animate-fade-in-up delay-200">
-            <h2 className="text-2xl font-bold mb-8" style={{ fontFamily: "'Lora', serif" }}>Send us a Message</h2>
-            <form className="space-y-5">
-              <div className="grid md:grid-cols-2 gap-5">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Full Name</label>
-                  <input type="text" required className="w-full px-5 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm" placeholder="John Doe" />
+          <div className="premium-card rounded-2xl bg-card p-8 md:p-10 animate-fade-in-up delay-200 min-h-[500px] flex flex-col justify-center">
+            {isSuccess ? (
+              <div className="text-center space-y-6 animate-fade-in">
+                <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle2 size={40} />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Email Address</label>
-                  <input type="email" required className="w-full px-5 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm" placeholder="john@example.com" />
-                </div>
+                <h2 className="text-3xl font-bold" style={{ fontFamily: "'Lora', serif" }}>Thank You!</h2>
+                <p className="text-muted leading-relaxed max-w-xs mx-auto">
+                  Your message has been sent successfully. Our team will get back to you shortly.
+                </p>
+                <button 
+                  onClick={() => setIsSuccess(false)}
+                  className="px-8 py-3 bg-primary text-white rounded-xl font-bold hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 transform hover:-translate-y-0.5"
+                >
+                  Send Another Message
+                </button>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Subject</label>
-                <input type="text" required className="w-full px-5 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm" placeholder="How can we help?" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Message</label>
-                <textarea rows={5} required className="w-full px-5 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm resize-none" placeholder="Tell us more about your needs..."></textarea>
-              </div>
-              <button type="submit" className="w-full py-4 bg-primary text-white rounded-xl font-bold hover:shadow-lg hover:shadow-primary/20 transition-all duration-300">
-                Send Message
-              </button>
-            </form>
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold mb-8" style={{ fontFamily: "'Lora', serif" }}>Send us a Message</h2>
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="grid md:grid-cols-2 gap-5">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Full Name</label>
+                      <input name="name" type="text" required className="w-full px-5 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm" placeholder="John Doe" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Email Address</label>
+                      <input name="email" type="email" required className="w-full px-5 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm" placeholder="john@example.com" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Subject</label>
+                    <input name="subject" type="text" required className="w-full px-5 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm" placeholder="How can we help?" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Message</label>
+                    <textarea name="message" rows={5} required className="w-full px-5 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm resize-none" placeholder="Tell us more about your needs..."></textarea>
+                  </div>
+                  
+                  {error && (
+                    <p className="text-sm text-red-500 font-medium px-1 animate-shake">{error}</p>
+                  )}
+
+                  <button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className="w-full py-4 bg-primary text-white rounded-xl font-bold hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 disabled:opacity-70 flex items-center justify-center gap-2 group"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 size={20} className="animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send size={20} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                        Send Message
+                      </>
+                    )}
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         </div>
       </div>
