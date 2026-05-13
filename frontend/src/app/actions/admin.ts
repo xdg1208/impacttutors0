@@ -186,3 +186,14 @@ export async function activateAndEnroll(formData: FormData) {
     return { error: error.message };
   }
 }
+
+export async function deleteContactMessage(id: number) {
+  const client = await api.auth();
+  try {
+    await client.delete(`/contact-messages/${id}/`);
+    revalidatePath("/dashboard/admin");
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}

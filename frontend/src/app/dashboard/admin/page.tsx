@@ -12,6 +12,7 @@ import ApplicationDetailManager from "@/components/admin/ApplicationDetailManage
 import StudentDataManager from "@/components/admin/StudentDataManager";
 import TutorDataManager from "@/components/admin/TutorDataManager";
 import CourseDataManager from "@/components/admin/CourseDataManager";
+import ContactMessageManager from "@/components/admin/ContactMessageManager";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -45,6 +46,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   let tutorApps: any[] = [];
   let studentApps: any[] = [];
   let inviteCodes: any[] = [];
+  let contactMessages: any[] = [];
 
   try {
     // Optimized: Fetch only required data if possible, but for now we filter locally
@@ -55,6 +57,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     tutorApps = (await client.get("/tutor-applications/").catch(() => [])) as any[];
     studentApps = (await client.get("/student-applications/").catch(() => [])) as any[];
     inviteCodes = (await client.get("/invites/").catch(() => [])) as any[];
+    contactMessages = (await client.get("/contact-messages/").catch(() => [])) as any[];
     courses = (await client.get("/courses/").catch(() => [])) as any[];
     sessions = (await client.get("/sessions/").catch(() => [])) as any[];
 
@@ -81,6 +84,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     { key: "students", label: "Students", count: studentCount },
     { key: "tutors", label: "Tutors", count: tutorCount },
     { key: "invites", label: "Registration Codes" },
+    { key: "inquiries", label: "Inquiries", count: contactMessages.length },
     { key: "courses", label: "Courses", count: courseCount },
     { key: "sessions", label: "Sessions" },
   ];
@@ -310,6 +314,11 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
               </div>
             )}
           </div>
+        )}
+
+        {/* ========== INQUIRIES TAB ========== */}
+        {tab === "inquiries" && (
+          <ContactMessageManager messages={contactMessages} />
         )}
       </div>
     </div>
