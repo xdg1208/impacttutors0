@@ -4,7 +4,7 @@ from .views import (
     ProfileViewSet, CourseViewSet, SessionViewSet, 
     StudentTutorAssignmentViewSet, InviteCodeViewSet,
     TutorApplicationViewSet, StudentApplicationViewSet, RegisterView,
-    ContactMessageViewSet
+    ContactMessageViewSet, ChangePasswordView
 )
 
 router = DefaultRouter()
@@ -20,4 +20,5 @@ router.register(r'contact-messages', ContactMessageViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('auth/register/', RegisterView.as_view(), name='auth_register'),
+    path('auth/change-password/', ChangePasswordView.as_view(), name='change_password'),
 ]

@@ -105,3 +105,29 @@ export async function signOut() {
   cookieStore.delete("refresh_token");
   redirect("/login");
 }
+
+export async function changePassword(formData: FormData) {
+  const old_password = formData.get("old_password") as string;
+  const new_password = formData.get("new_password") as string;
+  const confirm_password = formData.get("confirm_password") as string;
+
+  if (!old_password || !new_password || !confirm_password) {
+    return { error: "All fields are required." };
+  }
+
+  if (new_password !== confirm_password) {
+    return { error: "Passwords do not match." };
+  }
+
+  try {
+    const client = await api.auth();
+    await client.patch("/auth/change-password/", {
+      old_password,
+      new_password,
+      confirm_password
+    });
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message || "Failed to change password." };
+  }
+}

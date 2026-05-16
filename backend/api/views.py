@@ -3,6 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.core.mail import send_mail
+from django.conf import settings
 from .serializers import (
     UserSerializer, ProfileSerializer, CourseSerializer, 
     StudentTutorAssignmentSerializer, SessionSerializer, InviteCodeSerializer, 
@@ -21,6 +23,16 @@ class StudentApplicationViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
+
+    def perform_create(self, serializer):
+        application = serializer.save()
+        send_mail(
+            subject=f"New Student Application: {application.student_name}",
+            message=f"A new student application has been submitted by {application.student_name} ({application.grade_level}).\n\nContact: {application.contact_detail} ({application.preferred_contact_method})\n\nPlease check the admin dashboard for details.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.EMAIL_HOST_USER],
+            fail_silently=True,
+        )
 
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
@@ -44,6 +56,16 @@ class TutorApplicationViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
+
+    def perform_create(self, serializer):
+        application = serializer.save()
+        send_mail(
+            subject=f"New Tutor Application: {application.full_name}",
+            message=f"A new tutor application has been submitted by {application.full_name} ({application.email}).\n\nContact: {application.contact_detail} ({application.preferred_contact_method})\n\nPlease check the admin dashboard for details.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.EMAIL_HOST_USER],
+            fail_silently=True,
+        )
 
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
@@ -227,3 +249,41 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
+
+    def perform_create(self, serializer):
+        message = serializer.save()
+        send_mail(
+            subject=f"New Inquiry: {message.subject}",
+            message=f"You received a new message from {message.name} ({message.email}):\n\n{message.message}",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.EMAIL_HOST_USER],
+            fail_silently=True,
+        )
+
+class ChangePasswordView(generics.UpdateAPIView):
+    serializer_class = UserSerializer
+    model = User
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        old_password = request.data.get("old_password")
+        new_password = request.data.get("new_password")
+        confirm_password = request.data.get("confirm_password")
+
+        if not self.object.check_password(old_password):
+            return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if new_password != confirm_password:
+            return Response({"new_password": ["Passwords do not match."]}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Add basic length check if needed, or rely on Django validators
+        if len(new_password) < 8:
+            return Response({"new_password": ["Password must be at least 8 characters long."]}, status=status.HTTP_400_BAD_REQUEST)
+
+        self.object.set_password(new_password)
+        self.object.save()
+        return Response({"message": "Password updated successfully"}, status=status.HTTP_200_OK)

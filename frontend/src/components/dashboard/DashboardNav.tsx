@@ -29,7 +29,7 @@ export function DashboardSidebar({ profile }: DashboardNavProps) {
     { label: "Dashboard", icon: <LayoutDashboard size={20} />, href: dashboardBase },
     { label: "My Courses", icon: <BookOpen size={20} />, href: `${dashboardBase}#courses` },
     { label: "Schedule", icon: <Calendar size={20} />, href: `${dashboardBase}#schedule` },
-    { label: "Settings", icon: <Settings size={20} />, href: `${dashboardBase}#settings` },
+    { label: "Settings", icon: <Settings size={20} />, href: `${dashboardBase}/settings` },
     { label: "Return Home", icon: <Home size={20} />, href: "/" },
   ];
 
