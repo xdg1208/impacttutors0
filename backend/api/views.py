@@ -27,13 +27,21 @@ class StudentApplicationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         application = serializer.save()
-        send_mail(
-            subject=f"New Student Application: {application.student_name}",
-            message=f"A new student application has been submitted by {application.student_name} ({application.grade_level}).\n\nContact: {application.contact_detail} ({application.preferred_contact_method})\n\nPlease check the admin dashboard for details.",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[settings.EMAIL_HOST_USER],
-            fail_silently=True,
-        )
+        
+        # Send email in a background thread to prevent Gunicorn timeouts
+        def send_async_email():
+            try:
+                send_mail(
+                    subject=f"New Student Application: {application.student_name}",
+                    message=f"A new student application has been submitted by {application.student_name} ({application.grade_level}).\n\nContact: {application.contact_detail} ({application.preferred_contact_method})\n\nPlease check the admin dashboard for details.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[settings.EMAIL_HOST_USER],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                print(f"Error sending student application email: {e}")
+
+        threading.Thread(target=send_async_email).start()
 
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
@@ -60,13 +68,21 @@ class TutorApplicationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         application = serializer.save()
-        send_mail(
-            subject=f"New Tutor Application: {application.full_name}",
-            message=f"A new tutor application has been submitted by {application.full_name} ({application.email}).\n\nContact: {application.contact_detail} ({application.preferred_contact_method})\n\nPlease check the admin dashboard for details.",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[settings.EMAIL_HOST_USER],
-            fail_silently=True,
-        )
+        
+        # Send email in a background thread to prevent Gunicorn timeouts
+        def send_async_email():
+            try:
+                send_mail(
+                    subject=f"New Tutor Application: {application.full_name}",
+                    message=f"A new tutor application has been submitted by {application.full_name} ({application.email}).\n\nContact: {application.contact_detail} ({application.preferred_contact_method})\n\nPlease check the admin dashboard for details.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[settings.EMAIL_HOST_USER],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                print(f"Error sending tutor application email: {e}")
+
+        threading.Thread(target=send_async_email).start()
 
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
