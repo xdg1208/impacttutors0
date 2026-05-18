@@ -126,7 +126,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         try:
             profile = user.profile
             if profile.role == 'student':
-                return Course.objects.filter(student=profile)
+                return Course.objects.filter(students=profile)
             elif profile.role == 'tutor':
                 return Course.objects.filter(tutor=profile)
         except Profile.DoesNotExist:
@@ -148,12 +148,21 @@ class SessionViewSet(viewsets.ModelViewSet):
         student = serializer.validated_data.get('student')
         tutor = serializer.validated_data.get('tutor')
         
-        if course and not student:
-            student = course.student
-        if course and not tutor:
-            tutor = course.tutor
+        if course:
+            if not student:
+                # Course has ManyToMany 'students', not a singular 'student' attribute.
+                student = course.students.first()
+            if not tutor:
+                tutor = course.tutor
             
-        serializer.save(student=student, tutor=tutor, created_by=self.request.user.profile)
+        # Safely try to get profile, or use None for superusers
+        created_by = None
+        try:
+            created_by = self.request.user.profile
+        except (AttributeError, Profile.DoesNotExist):
+            pass
+            
+        serializer.save(student=student, tutor=tutor, created_by=created_by)
     
     def get_queryset(self):
         user = self.request.user

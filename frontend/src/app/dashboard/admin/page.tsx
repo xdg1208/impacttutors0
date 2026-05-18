@@ -13,6 +13,9 @@ import StudentDataManager from "@/components/admin/StudentDataManager";
 import TutorDataManager from "@/components/admin/TutorDataManager";
 import CourseDataManager from "@/components/admin/CourseDataManager";
 import ContactMessageManager from "@/components/admin/ContactMessageManager";
+import CreateCourseForm from "@/components/admin/CreateCourseForm";
+import CreateSessionForm from "@/components/admin/CreateSessionForm";
+import GenerateInviteForm from "@/components/admin/GenerateInviteForm";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -38,7 +41,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     redirect(`/dashboard/${profile.role}`);
   }
 
-  // Data fetching
+  // Data fetching - PARALLELIZED to prevent waterfall timeouts
   let students: any[] = [];
   let tutors: any[] = [];
   let courses: any[] = [];
@@ -49,17 +52,32 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   let contactMessages: any[] = [];
 
   try {
-    // Optimized: Fetch only required data if possible, but for now we filter locally
-    const allProfiles: any[] = await client.get("/profiles/");
-    students = allProfiles.filter(p => p.role === 'student');
-    tutors = allProfiles.filter(p => p.role === 'tutor');
-    
-    tutorApps = (await client.get("/tutor-applications/").catch(() => [])) as any[];
-    studentApps = (await client.get("/student-applications/").catch(() => [])) as any[];
-    inviteCodes = (await client.get("/invites/").catch(() => [])) as any[];
-    contactMessages = (await client.get("/contact-messages/").catch(() => [])) as any[];
-    courses = (await client.get("/courses/").catch(() => [])) as any[];
-    sessions = (await client.get("/sessions/").catch(() => [])) as any[];
+    const [
+      allProfiles,
+      fetchedTutorApps,
+      fetchedStudentApps,
+      fetchedInvites,
+      fetchedMessages,
+      fetchedCourses,
+      fetchedSessions
+    ] = await Promise.all([
+      client.get("/profiles/").catch(() => []),
+      client.get("/tutor-applications/").catch(() => []),
+      client.get("/student-applications/").catch(() => []),
+      client.get("/invites/").catch(() => []),
+      client.get("/contact-messages/").catch(() => []),
+      client.get("/courses/").catch(() => []),
+      client.get("/sessions/").catch(() => []),
+    ]);
+
+    students = (allProfiles as any[]).filter(p => p.role === 'student');
+    tutors = (allProfiles as any[]).filter(p => p.role === 'tutor');
+    tutorApps = fetchedTutorApps as any[];
+    studentApps = fetchedStudentApps as any[];
+    inviteCodes = fetchedInvites as any[];
+    contactMessages = fetchedMessages as any[];
+    courses = fetchedCourses as any[];
+    sessions = fetchedSessions as any[];
 
     // Local Search Filtering (Scalability - Client Side Filter logic for now)
     if (q) {
@@ -142,22 +160,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         {/* ========== INVITES TAB ========== */}
         {tab === "invites" && (
           <div className="space-y-6">
-            <div className="premium-card rounded-2xl p-6 space-y-4">
-              <h3 className="font-bold text-sm uppercase tracking-widest text-muted">Generate Registration Code</h3>
-              <form action={async (formData) => { "use server"; await generateInviteCode(formData); }} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input name="email" type="email" placeholder="Recipient's Email (optional)"
-                  className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary md:col-span-1" />
-                <select name="role" required className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary">
-                  <option value="student">For Student</option>
-                  <option value="tutor">For Tutor</option>
-                </select>
-                <button type="submit" className="px-6 py-2.5 bg-primary text-white rounded-lg text-sm font-bold hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2">
-                  <Plus size={16} /> Generate Code
-                </button>
-              </form>
-              <p className="text-[10px] text-muted">Generate a single-use code to allow a student or tutor to register.</p>
-            </div>
-
+            <GenerateInviteForm />
             <div className="premium-card rounded-2xl p-0 overflow-hidden">
               <div className="p-5 border-b border-border">
                 <h2 className="text-lg font-bold" style={{ fontFamily: "'Lora', serif" }}>Active Registration Codes</h2>
@@ -225,33 +228,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         {/* ========== COURSES TAB ========== */}
         {tab === "courses" && (
           <div className="space-y-6">
-            <div className="premium-card rounded-2xl p-6 space-y-4">
-              <h3 className="font-bold text-sm uppercase tracking-widest text-muted">Create New Course</h3>
-              <form action={async (formData) => { "use server"; await createCourse(formData); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input name="title" placeholder="Course Title (e.g. GCSE Math)" required
-                  className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary" />
-                <input name="subject" placeholder="Subject (e.g. Mathematics)" required
-                  className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary" />
-                <div className="space-y-1">
-                  <select name="studentIds" multiple className="w-full px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary min-h-[100px]">
-                    {students?.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
-                  </select>
-                  <p className="text-[9px] text-muted ml-1 font-bold">Hold Ctrl/Cmd to select multiple students</p>
-                </div>
-                <div className="space-y-4">
-                   <select name="tutorId" className="w-full px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary">
-                    <option value="">Assign Tutor (optional)</option>
-                    {tutors?.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)}
-                  </select>
-                  <input name="meetLink" placeholder="Zoom Meeting Link (optional)"
-                    className="w-full px-4 py-3 bg-section border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm" />
-                </div>
-                <button type="submit" className="md:col-span-2 px-6 py-3 bg-primary text-white rounded-lg text-sm font-bold hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2">
-                  <Plus size={16} /> Create New Course
-                </button>
-              </form>
-            </div>
-
+            <CreateCourseForm students={students} tutors={tutors} />
             <CourseDataManager 
               courses={courses} 
               students={students} 
@@ -263,25 +240,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         {/* ========== SESSIONS TAB ========== */}
         {tab === "sessions" && (
           <div className="space-y-6">
-            <div className="premium-card rounded-2xl p-6 space-y-4">
-              <h3 className="font-bold text-sm uppercase tracking-widest text-muted">Create New Session</h3>
-              <form action={async (formData) => { "use server"; await createSession(formData); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <select name="courseId" required className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary">
-                  <option value="">Select Course *</option>
-                  {courses?.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                </select>
-                <input name="title" placeholder="Session Title" required
-                  className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary" />
-                <input name="startTime" type="datetime-local" required
-                  className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary" />
-                <input name="duration" type="number" placeholder="Duration (min)" defaultValue="60"
-                  className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary" />
-                <button type="submit" className="px-6 py-2.5 bg-primary text-white rounded-lg text-sm font-bold hover:shadow-lg hover:shadow-primary/20 transition-all">
-                  Create Session
-                </button>
-              </form>
-            </div>
-
+            <CreateSessionForm courses={courses} />
             {!sessions || sessions.length === 0 ? (
               <div className="premium-card rounded-2xl p-12 text-center text-muted text-sm">No sessions scheduled.</div>
             ) : (

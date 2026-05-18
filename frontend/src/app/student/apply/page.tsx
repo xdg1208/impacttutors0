@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight, User, Mail, Phone, GraduationCap, Book, MessageSquare, CheckCircle2 } from "lucide-react";
+import { ChevronRight, User, Mail, Phone, GraduationCap, Book, MessageSquare, CheckCircle2, Loader2 } from "lucide-react";
 import { submitStudentApplication } from "@/app/actions/applications";
 
 export default function StudentApplyPage() {
@@ -187,8 +187,17 @@ export default function StudentApplyPage() {
                 disabled={loading}
                 className="w-full py-4 bg-primary text-white rounded-xl font-bold hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2 group"
               >
-                {loading ? "Submitting..." : "Submit Application"}
-                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                {loading ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Submitting Application...
+                  </>
+                ) : (
+                  <>
+                    Submit Application
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  </>
+                )}
               </button>
             </form>
           </div>

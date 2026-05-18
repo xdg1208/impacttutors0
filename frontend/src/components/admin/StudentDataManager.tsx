@@ -4,7 +4,7 @@ import { useState } from "react";
 import { 
   Users, Mail, Phone, Calendar, ShieldCheck, 
   BookOpen, Search, X, MoreVertical, ExternalLink,
-  GraduationCap, Clock, CheckCircle, Activity, Plus
+  GraduationCap, Clock, CheckCircle, Activity, Plus, AlertCircle
 } from "lucide-react";
 import { activateAndEnroll, toggleOnboardingStatus } from "@/app/actions/admin";
 
@@ -17,6 +17,8 @@ interface StudentDataManagerProps {
 export default function StudentDataManager({ students, courses, tutors }: StudentDataManagerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
   const filteredStudents = students.filter(s => 
     s.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -27,7 +29,10 @@ export default function StudentDataManager({ students, courses, tutors }: Studen
     return courses.filter(c => c.students && c.students.includes(studentId));
   };
 
-  const handleClose = () => setSelectedStudent(null);
+  const handleClose = () => {
+    setSelectedStudent(null);
+    setStatus(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -113,6 +118,14 @@ export default function StudentDataManager({ students, courses, tutors }: Studen
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-8">
+              {status && (
+                <div className={`p-4 rounded-xl flex items-center gap-3 text-sm animate-in fade-in slide-in-from-top-1 ${
+                  status.type === 'success' ? 'bg-green-500/10 text-green-600 border border-green-500/20' : 'bg-red-500/10 text-red-600 border border-red-500/20'
+                }`}>
+                  {status.type === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
+                  {status.message}
+                </div>
+              )}
               {/* Detailed Info Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <DetailItem icon={<Mail size={16} />} label="Email Address" value={selectedStudent.email} />
@@ -129,7 +142,23 @@ export default function StudentDataManager({ students, courses, tutors }: Studen
                   <div className="flex items-center gap-2 text-amber-800 font-bold text-xs uppercase tracking-widest">
                     <Activity size={14} /> Activation Required
                   </div>
-                  <form action={async (formData) => { await activateAndEnroll(formData); handleClose(); }} className="space-y-3">
+                  <form action={async (formData) => { 
+                    setLoading(true);
+                    setStatus(null);
+                    try {
+                      const result = await activateAndEnroll(formData); 
+                      if (result.success) {
+                        setStatus({ type: 'success', message: 'Student activated and enrolled!' });
+                        setTimeout(() => handleClose(), 1500);
+                      } else {
+                        setStatus({ type: 'error', message: result.error || 'Failed to activate' });
+                      }
+                    } catch (err) {
+                      setStatus({ type: 'error', message: 'Network error occurred.' });
+                    } finally {
+                      setLoading(false);
+                    }
+                  }} className="space-y-3">
                     <input type="hidden" name="studentId" value={selectedStudent.id} />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <select name="tutorId" className="w-full text-xs bg-white border border-amber-200 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-amber-200">
@@ -138,8 +167,8 @@ export default function StudentDataManager({ students, courses, tutors }: Studen
                       </select>
                       <input name="courseTitle" placeholder="Course Title (e.g. Science)" className="w-full text-xs bg-white border border-amber-200 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-amber-200" />
                     </div>
-                    <button className="w-full py-2.5 bg-amber-600 text-white text-xs font-bold rounded-xl hover:bg-amber-700 transition-all flex items-center justify-center gap-2 shadow-sm shadow-amber-600/20">
-                      <CheckCircle size={16} /> Activate & Enroll Student
+                    <button disabled={loading} className="w-full py-2.5 bg-amber-600 text-white text-xs font-bold rounded-xl hover:bg-amber-700 transition-all flex items-center justify-center gap-2 shadow-sm shadow-amber-600/20 disabled:opacity-50">
+                      {loading ? "..." : <><CheckCircle size={16} /> Activate & Enroll Student</>}
                     </button>
                   </form>
                 </div>
@@ -171,15 +200,29 @@ export default function StudentDataManager({ students, courses, tutors }: Studen
 
             <div className="p-6 border-t border-border bg-section-alt/30 flex items-center justify-between gap-3">
               <button 
+                disabled={loading}
                 onClick={async () => {
                    if (confirm(`Are you sure you want to ${selectedStudent.is_onboarded ? 'deactivate' : 'activate'} this student?`)) {
-                      await toggleOnboardingStatus(selectedStudent.id, !selectedStudent.is_onboarded);
-                      handleClose();
+                      setLoading(true);
+                      setStatus(null);
+                      try {
+                        const result = await toggleOnboardingStatus(selectedStudent.id, !selectedStudent.is_onboarded);
+                        if (result.success) {
+                           setStatus({ type: 'success', message: `Student updated successfully.` });
+                           setTimeout(() => handleClose(), 1500);
+                        } else {
+                           setStatus({ type: 'error', message: result.error || 'Failed to update student.' });
+                        }
+                      } catch (err) {
+                        setStatus({ type: 'error', message: 'Network error occurred.' });
+                      } finally {
+                        setLoading(false);
+                      }
                    }
                 }}
-                className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${selectedStudent.is_onboarded ? "bg-amber-50 text-amber-600 border border-amber-200" : "bg-green-50 text-green-600 border border-green-200"}`}
+                className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 ${selectedStudent.is_onboarded ? "bg-amber-50 text-amber-600 border border-amber-200" : "bg-green-50 text-green-600 border border-green-200"}`}
               >
-                {selectedStudent.is_onboarded ? "Deactivate Student" : "Quick Activate"}
+                {loading ? "..." : (selectedStudent.is_onboarded ? "Deactivate Student" : "Quick Activate")}
               </button>
               <button 
                 onClick={handleClose}

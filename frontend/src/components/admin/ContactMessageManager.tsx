@@ -20,9 +20,14 @@ export default function ContactMessageManager({ messages }: ContactMessageManage
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this message?")) return;
     setLoading(true);
-    await deleteContactMessage(id);
-    setLoading(false);
-    if (selectedMessage?.id === id) handleClose();
+    try {
+      await deleteContactMessage(id);
+      if (selectedMessage?.id === id) handleClose();
+    } catch (err) {
+      console.error("Failed to delete message", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

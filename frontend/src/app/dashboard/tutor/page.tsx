@@ -31,22 +31,19 @@ export default async function TutorDashboard() {
     redirect(profile.role ? `/dashboard/${profile.role}` : "/dashboard/onboarding");
   }
 
-  // Fetch courses assigned to this tutor
+  // Fetch data in parallel
   let courses: any[] = [];
-  try {
-    courses = await client.get("/courses/");
-  } catch (error) {
-    console.error("Error fetching courses:", error);
-  }
-
-  // Fetch upcoming sessions for this tutor
   let sessions: any[] = [];
+  
   try {
-    sessions = await client.get("/sessions/", {
-      params: { status: 'scheduled' }
-    });
+    const [fetchedCourses, fetchedSessions] = await Promise.all([
+      client.get("/courses/").catch(() => []),
+      client.get("/sessions/", { params: { status: 'scheduled' } }).catch(() => [])
+    ]);
+    courses = fetchedCourses as any[];
+    sessions = fetchedSessions as any[];
   } catch (error) {
-    console.error("Error fetching sessions:", error);
+    console.error("Error fetching tutor dashboard data:", error);
   }
 
   const courseCount = courses?.length || 0;

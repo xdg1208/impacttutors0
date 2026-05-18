@@ -81,6 +81,7 @@ export default async function Home() {
                 fill
                 className="object-cover"
                 priority
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
               />
             </div>
 
@@ -279,6 +280,7 @@ export default async function Home() {
                 alt="Student achieving academic excellence"
                 fill
                 className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
 

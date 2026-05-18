@@ -149,6 +149,7 @@ CORS_ALLOWED_ORIGINS = [
     origin for origin in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if origin
 ] or [
     "http://localhost:3000",
+    "https://impact-tutors.vercel.app",
 ]
 
 CORS_ALLOW_CREDENTIALS = True

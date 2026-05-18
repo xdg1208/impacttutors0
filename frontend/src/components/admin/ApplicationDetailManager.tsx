@@ -16,29 +16,45 @@ interface ApplicationDetailManagerProps {
 export default function ApplicationDetailManager({ studentApps, tutorApps }: ApplicationDetailManagerProps) {
   const [selectedApp, setSelectedApp] = useState<any | null>(null);
   const [type, setType] = useState<'student' | 'tutor' | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const handleClose = () => {
-    setSelectedApp(null);
-    setType(null);
-    setGeneratedCode(null);
-  };
+  const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
   const handleApprove = async () => {
     if (!selectedApp || !type) return;
     setLoading(true);
-    await approveApplication(selectedApp.id, type);
-    setLoading(false);
-    handleClose();
+    setStatus(null);
+    try {
+      const result = await approveApplication(selectedApp.id, type);
+      if (result.success) {
+        setStatus({ type: 'success', message: 'Application approved successfully!' });
+        setTimeout(() => handleClose(), 1500);
+      } else {
+        setStatus({ type: 'error', message: result.error || 'Failed to approve' });
+      }
+    } catch (err) {
+      setStatus({ type: 'error', message: 'Network error occurred.' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReject = async () => {
     if (!selectedApp || !type) return;
     if (!confirm("Are you sure you want to reject this application?")) return;
     setLoading(true);
-    await rejectApplication(selectedApp.id, type);
-    setLoading(false);
-    handleClose();
+    setStatus(null);
+    try {
+      const result = await rejectApplication(selectedApp.id, type);
+      if (result.success) {
+        setStatus({ type: 'success', message: 'Application rejected.' });
+        setTimeout(() => handleClose(), 1500);
+      } else {
+        setStatus({ type: 'error', message: result.error || 'Failed to reject' });
+      }
+    } catch (err) {
+      setStatus({ type: 'error', message: 'Network error occurred.' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
@@ -46,22 +62,26 @@ export default function ApplicationDetailManager({ studentApps, tutorApps }: App
   const handleGenerateAndLinkCode = async () => {
     if (!selectedApp || !type) return;
     setLoading(true);
+    setStatus(null);
     
     const formData = new FormData();
     formData.append("email", selectedApp.email);
     formData.append("role", type);
     formData.append("applicationId", selectedApp.id.toString());
 
-    const result = await generateInviteCode(formData);
-    
-    if (result.success && result.code) {
-      setGeneratedCode(result.code);
-      // Mark as contacted/approved in logic if needed, but for now just show code
-      alert(`Code generated and linked: ${result.code}. You can now send this to the applicant.`);
-    } else {
-      alert("Failed to generate code: " + result.error);
+    try {
+      const result = await generateInviteCode(formData);
+      if (result.success && result.code) {
+        setGeneratedCode(result.code);
+        setStatus({ type: 'success', message: `Code ${result.code} generated and linked!` });
+      } else {
+        setStatus({ type: 'error', message: result.error || 'Failed to generate code' });
+      }
+    } catch (err) {
+      setStatus({ type: 'error', message: 'Network error occurred.' });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

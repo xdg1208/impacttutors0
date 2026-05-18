@@ -31,27 +31,19 @@ export default async function StudentDashboard() {
     redirect(profile.role ? `/dashboard/${profile.role}` : "/dashboard/onboarding");
   }
 
-  // Fetch enrolled courses
+  // Fetch data in parallel to prevent waterfall
   let courses: any[] = [];
-  try {
-    courses = await client.get("/courses/");
-    // In Django, filtering might be done via query params if list is not enough
-    // But our ViewSet filters by role/user already.
-  } catch (error) {
-    console.error("Error fetching courses:", error);
-  }
-
-  // Fetch upcoming sessions
   let sessions: any[] = [];
+  
   try {
-    sessions = await client.get("/sessions/", {
-      params: { 
-        status: 'scheduled',
-        // start_time_gte: new Date().toISOString() // Placeholder if filtering supported
-      }
-    });
+    const [fetchedCourses, fetchedSessions] = await Promise.all([
+      client.get("/courses/").catch(() => []),
+      client.get("/sessions/", { params: { status: 'scheduled' } }).catch(() => [])
+    ]);
+    courses = fetchedCourses as any[];
+    sessions = fetchedSessions as any[];
   } catch (error) {
-    console.error("Error fetching sessions:", error);
+    console.error("Error fetching dashboard data:", error);
   }
 
   const courseCount = courses?.length || 0;

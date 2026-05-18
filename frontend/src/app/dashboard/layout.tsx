@@ -9,15 +9,9 @@ export default async function DashboardLayout({
 }) {
   const client = await api.auth();
   
-  let profile: any;
-  let shouldRedirect = false;
-  try {
-    profile = await client.get("/profiles/me/");
-  } catch (error) {
-    shouldRedirect = true;
-  }
-
-  if (shouldRedirect) {
+  const profile = await client.get("/profiles/me/").catch(() => null);
+  
+  if (!profile) {
     redirect("/login");
   }
 
