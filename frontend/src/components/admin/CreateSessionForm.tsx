@@ -12,18 +12,22 @@ export default function CreateSessionForm({ courses }: CreateSessionFormProps) {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
-  async function handleSubmit(formData: FormData) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setLoading(true);
     setStatus(null);
     
+    const formData = new FormData(e.currentTarget);
     try {
       const result = await createSession(formData);
       if (result.success) {
         setStatus({ type: 'success', message: 'Session scheduled successfully!' });
+        (e.target as HTMLFormElement).reset();
       } else {
         setStatus({ type: 'error', message: result.error || 'Failed to create session' });
       }
     } catch (err: any) {
+      console.error("Session creation error:", err);
       setStatus({ type: 'error', message: 'A network error occurred.' });
     } finally {
       setLoading(false);
@@ -43,7 +47,7 @@ export default function CreateSessionForm({ courses }: CreateSessionFormProps) {
         </div>
       )}
 
-      <form action={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <select name="courseId" required className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary">
           <option value="">Select Course *</option>
           {courses?.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}

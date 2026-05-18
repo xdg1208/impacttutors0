@@ -144,25 +144,37 @@ class SessionViewSet(viewsets.ModelViewSet):
     serializer_class = SessionSerializer
     
     def perform_create(self, serializer):
-        course = serializer.validated_data.get('course')
-        student = serializer.validated_data.get('student')
-        tutor = serializer.validated_data.get('tutor')
-        
-        if course:
-            if not student:
-                # Course has ManyToMany 'students', not a singular 'student' attribute.
-                student = course.students.first()
-            if not tutor:
-                tutor = course.tutor
-            
-        # Safely try to get profile, or use None for superusers
-        created_by = None
         try:
-            created_by = self.request.user.profile
-        except (AttributeError, Profile.DoesNotExist):
-            pass
+            course = serializer.validated_data.get('course')
+            student = serializer.validated_data.get('student')
+            tutor = serializer.validated_data.get('tutor')
+            start_time = serializer.validated_data.get('start_time')
             
-        serializer.save(student=student, tutor=tutor, created_by=created_by)
+            # Debug logging for production visibility
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"Creating session for course: {course}, start_time: {start_time}")
+            
+            if course:
+                if not student:
+                    student = course.students.first()
+                if not tutor:
+                    tutor = course.tutor
+                
+            created_by = None
+            if self.request.user.is_authenticated:
+                try:
+                    created_by = self.request.user.profile
+                except (AttributeError, Profile.DoesNotExist):
+                    pass
+            
+            serializer.save(student=student, tutor=tutor, created_by=created_by)
+            logger.info("Session created successfully.")
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"CRITICAL ERROR in Session create: {str(e)}", exc_info=True)
+            raise e
     
     def get_queryset(self):
         user = self.request.user

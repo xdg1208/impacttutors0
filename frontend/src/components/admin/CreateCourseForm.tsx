@@ -13,19 +13,22 @@ export default function CreateCourseForm({ students, tutors }: CreateCourseFormP
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
-  async function handleSubmit(formData: FormData) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setLoading(true);
     setStatus(null);
     
+    const formData = new FormData(e.currentTarget);
     try {
       const result = await createCourse(formData);
       if (result.success) {
         setStatus({ type: 'success', message: 'Course created successfully!' });
-        // Reset form logic if needed, but revalidatePath will refresh the page
+        (e.target as HTMLFormElement).reset();
       } else {
         setStatus({ type: 'error', message: result.error || 'Failed to create course' });
       }
     } catch (err: any) {
+      console.error("Course creation error:", err);
       setStatus({ type: 'error', message: 'A network error occurred.' });
     } finally {
       setLoading(false);
@@ -45,7 +48,7 @@ export default function CreateCourseForm({ students, tutors }: CreateCourseFormP
         </div>
       )}
 
-      <form action={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input name="title" placeholder="Course Title (e.g. GCSE Math)" required
           className="px-4 py-2.5 bg-section border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary" />
         
@@ -79,8 +82,17 @@ export default function CreateCourseForm({ students, tutors }: CreateCourseFormP
           disabled={loading}
           className="md:col-span-2 px-6 py-3 bg-primary text-white rounded-lg text-sm font-bold hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />} 
-          {loading ? 'Creating...' : 'Create New Course'}
+          {loading ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Creating Course...
+            </>
+          ) : (
+            <>
+              <Plus size={16} />
+              Create New Course
+            </>
+          )} 
         </button>
       </form>
       <p className="text-[10px] text-muted">A valid course must have at least one student assigned.</p>

@@ -59,7 +59,7 @@ class Course(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.title
+        return self.title or "Untitled Course"
 
 class StudentTutorAssignment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -91,7 +91,8 @@ class Session(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.course.title} session on {self.start_time}"
+        title = self.course.title if self.course else "Unknown Course"
+        return f"{title} session on {self.start_time or 'TBD'}"
 
 class InviteCode(models.Model):
     code = models.CharField(max_length=20, unique=True, blank=True)
