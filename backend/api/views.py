@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from django.core.mail import send_mail
 from django.conf import settings
+import threading
 from .serializers import (
     UserSerializer, ProfileSerializer, CourseSerializer, 
     StudentTutorAssignmentSerializer, SessionSerializer, InviteCodeSerializer, 
@@ -293,13 +294,21 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         message = serializer.save()
-        send_mail(
-            subject=f"New Inquiry: {message.subject}",
-            message=f"You received a new message from {message.name} ({message.email}):\n\n{message.message}",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[settings.EMAIL_HOST_USER],
-            fail_silently=True,
-        )
+        
+        # Send email in a background thread to prevent Gunicorn timeouts
+        def send_async_email():
+            try:
+                send_mail(
+                    subject=f"New Inquiry: {message.subject}",
+                    message=f"You received a new message from {message.name} ({message.email}):\n\n{message.message}",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[settings.EMAIL_HOST_USER],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                print(f"Error sending inquiry email: {e}")
+
+        threading.Thread(target=send_async_email).start()
 
 class ChangePasswordView(generics.UpdateAPIView):
     serializer_class = UserSerializer
