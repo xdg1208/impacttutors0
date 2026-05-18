@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { 
   BookOpen, Search, X, Edit3, Users, 
   GraduationCap, Video, MoreVertical, 
-  ExternalLink, Save, ArrowRight
+  ExternalLink, Save, ArrowRight, Trash2, CheckSquare, Square,
+  Loader2
 } from "lucide-react";
-import { updateCourse } from "@/app/actions/admin";
+import { updateCourse, deleteCourse, bulkDeleteCourses } from "@/app/actions/admin";
 
 interface CourseDataManagerProps {
   courses: any[];
@@ -15,8 +17,11 @@ interface CourseDataManagerProps {
 }
 
 export default function CourseDataManager({ courses, students, tutors }: CourseDataManagerProps) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [editingCourse, setEditingCourse] = useState<any | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState<string | null>(null); // 'bulk' or courseId
 
   const filteredCourses = courses.filter(c => 
     c.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -25,6 +30,38 @@ export default function CourseDataManager({ courses, students, tutors }: CourseD
   );
 
   const handleClose = () => setEditingCourse(null);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredCourses.length) setSelectedIds([]);
+    else setSelectedIds(filteredCourses.map(c => c.id));
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this course? This action cannot be undone.")) return;
+    setLoading(id);
+    try {
+      await deleteCourse(id);
+      router.refresh();
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Are you sure you want to delete ${selectedIds.length} courses? This action cannot be undone.`)) return;
+    setLoading('bulk');
+    try {
+      await bulkDeleteCourses(selectedIds);
+      setSelectedIds([]);
+      router.refresh();
+    } finally {
+      setLoading(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -45,11 +82,33 @@ export default function CourseDataManager({ courses, students, tutors }: CourseD
         </div>
       </div>
 
+      {/* Bulk Actions */}
+      {selectedIds.length > 0 && (
+        <div className="flex items-center justify-between p-4 bg-primary/5 border border-primary/10 rounded-2xl animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-bold text-primary">{selectedIds.length} courses selected</span>
+          </div>
+          <button 
+            onClick={handleBulkDelete}
+            disabled={loading === 'bulk'}
+            className="px-4 py-2 bg-red-500 text-white rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-red-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
+          >
+            {loading === 'bulk' ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+            Delete Selected
+          </button>
+        </div>
+      )}
+
       {/* Courses List */}
       <div className="premium-card rounded-2xl p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead><tr className="bg-section-alt/50 border-b border-border">
+              <th className="px-5 py-3 w-10">
+                <button onClick={toggleSelectAll} className="text-muted hover:text-primary transition-colors">
+                  {selectedIds.length === filteredCourses.length && filteredCourses.length > 0 ? <CheckSquare size={16} /> : <Square size={16} />}
+                </button>
+              </th>
               <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted">Course</th>
               <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted">Students</th>
               <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted">Tutor</th>
@@ -57,7 +116,12 @@ export default function CourseDataManager({ courses, students, tutors }: CourseD
             </tr></thead>
             <tbody className="divide-y divide-border">
               {filteredCourses.map(c => (
-                <tr key={c.id} className="hover:bg-section/5 transition-colors">
+                <tr key={c.id} className={`hover:bg-section/5 transition-colors ${selectedIds.includes(c.id) ? 'bg-primary/[0.02]' : ''}`}>
+                  <td className="px-5 py-4">
+                    <button onClick={() => toggleSelect(c.id)} className={`${selectedIds.includes(c.id) ? 'text-primary' : 'text-muted/40'} hover:text-primary transition-colors`}>
+                      {selectedIds.includes(c.id) ? <CheckSquare size={16} /> : <Square size={16} />}
+                    </button>
+                  </td>
                   <td className="px-5 py-4">
                     <p className="text-sm font-bold">{c.title}</p>
                     <p className="text-[10px] text-muted">{c.subject}</p>
@@ -72,18 +136,29 @@ export default function CourseDataManager({ courses, students, tutors }: CourseD
                   </td>
                   <td className="px-5 py-4 text-sm font-medium">{c.tutor_name || "—"}</td>
                   <td className="px-5 py-4 text-right">
-                    <button 
-                      onClick={() => setEditingCourse(c)}
-                      className="p-2 hover:bg-primary/10 text-primary rounded-xl transition-all"
-                    >
-                      <Edit3 size={16} />
-                    </button>
+                    <div className="flex justify-end gap-1">
+                      <button 
+                        onClick={() => setEditingCourse(c)}
+                        className="p-2 hover:bg-primary/10 text-primary rounded-xl transition-all"
+                        title="Edit Course"
+                      >
+                        <Edit3 size={16} />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(c.id)}
+                        disabled={loading === c.id}
+                        className="p-2 hover:bg-red-50 text-red-400 hover:text-red-600 rounded-xl transition-all disabled:opacity-50"
+                        title="Delete Course"
+                      >
+                        {loading === c.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
               {filteredCourses.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="p-12 text-center text-muted text-sm italic">No courses matches your search.</td>
+                  <td colSpan={5} className="p-12 text-center text-muted text-sm italic">No courses matches your search.</td>
                 </tr>
               )}
             </tbody>

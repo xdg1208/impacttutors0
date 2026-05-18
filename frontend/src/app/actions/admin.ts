@@ -117,6 +117,28 @@ export async function updateCourse(courseId: string, formData: FormData) {
   }
 }
 
+export async function deleteCourse(courseId: string) {
+  const client = await api.auth();
+  try {
+    await client.delete(`/courses/${courseId}/`);
+    revalidatePath("/dashboard/admin");
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}
+
+export async function bulkDeleteCourses(ids: string[]) {
+  const client = await api.auth();
+  try {
+    await client.post("/courses/bulk-delete/", { ids });
+    revalidatePath("/dashboard/admin");
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}
+
 export async function createSession(formData: FormData) {
   const courseId = formData.get("courseId") as string;
   const title = formData.get("title") as string;
@@ -137,6 +159,28 @@ export async function createSession(formData: FormData) {
       status: "scheduled",
     });
 
+    revalidatePath("/dashboard/admin");
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}
+
+export async function deleteSession(sessionId: string) {
+  const client = await api.auth();
+  try {
+    await client.delete(`/sessions/${sessionId}/`);
+    revalidatePath("/dashboard/admin");
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}
+
+export async function bulkDeleteSessions(ids: string[]) {
+  const client = await api.auth();
+  try {
+    await client.post("/sessions/bulk-delete/", { ids });
     revalidatePath("/dashboard/admin");
     return { success: true };
   } catch (error: any) {

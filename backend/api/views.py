@@ -139,6 +139,16 @@ class CourseViewSet(viewsets.ModelViewSet):
             return [permissions.IsAuthenticated()]
         return [permissions.IsAdminUser()]
 
+    @action(detail=False, methods=['post'], url_path='bulk-delete')
+    def bulk_delete(self, request):
+        ids = request.data.get('ids', [])
+        if not ids:
+            return Response({"error": "No IDs provided"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        with transaction.atomic():
+            deleted_count, _ = Course.objects.filter(id__in=ids).delete()
+            return Response({"message": f"Successfully deleted {deleted_count} courses"}, status=status.HTTP_204_NO_CONTENT)
+
 class SessionViewSet(viewsets.ModelViewSet):
     queryset = Session.objects.all()
     serializer_class = SessionSerializer
@@ -193,6 +203,16 @@ class SessionViewSet(viewsets.ModelViewSet):
             return Session.objects.none()
         
         return Session.objects.none()
+
+    @action(detail=False, methods=['post'], url_path='bulk-delete')
+    def bulk_delete(self, request):
+        ids = request.data.get('ids', [])
+        if not ids:
+            return Response({"error": "No IDs provided"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        with transaction.atomic():
+            deleted_count, _ = Session.objects.filter(id__in=ids).delete()
+            return Response({"message": f"Successfully deleted {deleted_count} sessions"}, status=status.HTTP_204_NO_CONTENT)
 
 class StudentTutorAssignmentViewSet(viewsets.ModelViewSet):
     queryset = StudentTutorAssignment.objects.all()

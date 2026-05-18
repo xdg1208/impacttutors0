@@ -12,6 +12,7 @@ import ApplicationDetailManager from "@/components/admin/ApplicationDetailManage
 import StudentDataManager from "@/components/admin/StudentDataManager";
 import TutorDataManager from "@/components/admin/TutorDataManager";
 import CourseDataManager from "@/components/admin/CourseDataManager";
+import SessionDataManager from "@/components/admin/SessionDataManager";
 import ContactMessageManager from "@/components/admin/ContactMessageManager";
 import CreateCourseForm from "@/components/admin/CreateCourseForm";
 import CreateSessionForm from "@/components/admin/CreateSessionForm";
@@ -241,37 +242,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         {tab === "sessions" && (
           <div className="space-y-6">
             <CreateSessionForm courses={courses} />
-            {!sessions || sessions.length === 0 ? (
-              <div className="premium-card rounded-2xl p-12 text-center text-muted text-sm">No sessions scheduled.</div>
-            ) : (
-              <div className="premium-card rounded-2xl p-0 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead><tr className="bg-section-alt/50 border-b border-border">
-                      <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted">Session</th>
-                      <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted">Date/Time</th>
-                      <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted">Status</th>
-                    </tr></thead>
-                    <tbody className="divide-y divide-border">
-                      {sessions.map(s => (
-                        <tr key={s.id} className="hover:bg-section/5">
-                          <td className="px-5 py-4">
-                            <p className="text-sm font-bold">{s.title}</p>
-                            <p className="text-[10px] text-muted">{s.student_name} with {s.tutor_name}</p>
-                          </td>
-                          <td className="px-5 py-4 text-sm">
-                            {new Date(s.start_time).toLocaleString()}
-                          </td>
-                          <td className="px-5 py-4">
-                            <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold uppercase">{s.status}</span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
+            <SessionDataManager sessions={sessions} />
           </div>
         )}
 

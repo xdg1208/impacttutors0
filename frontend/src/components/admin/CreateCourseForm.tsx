@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, Check, AlertCircle, Loader2 } from "lucide-react";
 import { createCourse } from "@/app/actions/admin";
 
@@ -10,6 +11,7 @@ interface CreateCourseFormProps {
 }
 
 export default function CreateCourseForm({ students, tutors }: CreateCourseFormProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
@@ -24,6 +26,7 @@ export default function CreateCourseForm({ students, tutors }: CreateCourseFormP
       if (result.success) {
         setStatus({ type: 'success', message: 'Course created successfully!' });
         (e.target as HTMLFormElement).reset();
+        router.refresh();
       } else {
         setStatus({ type: 'error', message: result.error || 'Failed to create course' });
       }

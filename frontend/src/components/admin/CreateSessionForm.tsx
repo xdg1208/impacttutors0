@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Calendar, Check, AlertCircle, Loader2, Plus } from "lucide-react";
 import { createSession } from "@/app/actions/admin";
 
@@ -9,6 +10,7 @@ interface CreateSessionFormProps {
 }
 
 export default function CreateSessionForm({ courses }: CreateSessionFormProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
@@ -23,6 +25,7 @@ export default function CreateSessionForm({ courses }: CreateSessionFormProps) {
       if (result.success) {
         setStatus({ type: 'success', message: 'Session scheduled successfully!' });
         (e.target as HTMLFormElement).reset();
+        router.refresh();
       } else {
         setStatus({ type: 'error', message: result.error || 'Failed to create session' });
       }
