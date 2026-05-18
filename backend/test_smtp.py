@@ -3,21 +3,19 @@ from email.mime.text import MIMEText
 
 def test_smtp():
     host = 'smtp.gmail.com'
-    port = 587
+    port = 465
     user = 'official.impacttutors@gmail.com'
     password = 'uvsorcdeaqmowzlt'
     
-    # ... rest of the code
-    
-    print(f"Testing connection to {host}:{port}...")
+    print(f"Testing connection to {host}:{port} (SSL)...")
     print(f"User: {user}")
     
     try:
-        server = smtplib.SMTP(host, port, timeout=10)
-        print("Connected to server.")
+        server = smtplib.SMTP_SSL(host, port, timeout=10)
+        print("Connected to server via SSL.")
         
         server.set_debuglevel(1)
-        server.starttls()
+        # SSL doesn't need starttls()
         print("TLS started.")
         
         server.login(user, password)

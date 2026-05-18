@@ -9,12 +9,33 @@ import threading
 from .serializers import (
     UserSerializer, ProfileSerializer, CourseSerializer, 
     StudentTutorAssignmentSerializer, SessionSerializer, InviteCodeSerializer, 
-    TutorApplicationSerializer, StudentApplicationSerializer, ContactMessageSerializer
+    TutorApplicationSerializer, StudentApplicationSerializer, ContactMessageSerializer,
+    GlobalSettingSerializer
 )
 from .models import (
     Profile, Course, StudentTutorAssignment, Session, 
-    InviteCode, StudentApplication, TutorApplication, ContactMessage
+    InviteCode, StudentApplication, TutorApplication, ContactMessage,
+    GlobalSetting
 )
+
+class GlobalSettingViewSet(viewsets.ModelViewSet):
+    queryset = GlobalSetting.objects.all()
+    serializer_class = GlobalSettingSerializer
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
+
+    def list(self, request, *args, **kwargs):
+        # Always return the first setting object (singleton behavior)
+        instance = GlobalSetting.objects.first()
+        if not instance:
+            # Create a default if none exists
+            instance = GlobalSetting.objects.create()
+        
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 class StudentApplicationViewSet(viewsets.ModelViewSet):
     queryset = StudentApplication.objects.all().order_by('-created_at')

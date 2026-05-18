@@ -36,12 +36,15 @@ export default async function TutorDashboard() {
   let sessions: any[] = [];
   
   try {
-    const [fetchedCourses, fetchedSessions] = await Promise.all([
+    const [fetchedCourses, fetchedSessions, fetchedSettings] = await Promise.all([
       client.get("/courses/").catch(() => []),
-      client.get("/sessions/", { params: { status: 'scheduled' } }).catch(() => [])
+      client.get("/sessions/", { params: { status: 'scheduled' } }).catch(() => []),
+      client.get("/settings/").catch(() => null)
     ]);
     courses = fetchedCourses as any[];
     sessions = fetchedSessions as any[];
+    const settings = fetchedSettings as any;
+    const whatsappLink = settings?.whatsapp_group_link || "https://chat.whatsapp.com/YOUR_DEFAULT_LINK";
   } catch (error) {
     console.error("Error fetching tutor dashboard data:", error);
   }
@@ -232,7 +235,7 @@ export default async function TutorDashboard() {
             <h3 className="font-bold text-sm">WhatsApp Community</h3>
             <p className="text-[11px] text-muted leading-relaxed">Join our tutor community for updates, training resources, and direct admin communication.</p>
             <a
-              href="https://chat.whatsapp.com/YOUR_GROUP_LINK"
+              href={whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all text-center block"

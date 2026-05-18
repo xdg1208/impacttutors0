@@ -14,6 +14,7 @@ import TutorDataManager from "@/components/admin/TutorDataManager";
 import CourseDataManager from "@/components/admin/CourseDataManager";
 import SessionDataManager from "@/components/admin/SessionDataManager";
 import ContactMessageManager from "@/components/admin/ContactMessageManager";
+import AdminSettingsPanel from "@/components/admin/AdminSettingsPanel";
 import CreateCourseForm from "@/components/admin/CreateCourseForm";
 import CreateSessionForm from "@/components/admin/CreateSessionForm";
 import GenerateInviteForm from "@/components/admin/GenerateInviteForm";
@@ -51,6 +52,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   let studentApps: any[] = [];
   let inviteCodes: any[] = [];
   let contactMessages: any[] = [];
+  let settings: any = null;
 
   try {
     const [
@@ -60,7 +62,8 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
       fetchedInvites,
       fetchedMessages,
       fetchedCourses,
-      fetchedSessions
+      fetchedSessions,
+      fetchedSettings
     ] = await Promise.all([
       client.get("/profiles/").catch(() => []),
       client.get("/tutor-applications/").catch(() => []),
@@ -69,6 +72,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
       client.get("/contact-messages/").catch(() => []),
       client.get("/courses/").catch(() => []),
       client.get("/sessions/").catch(() => []),
+      client.get("/settings/").catch(() => null),
     ]);
 
     students = (allProfiles as any[]).filter(p => p.role === 'student');
@@ -79,6 +83,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     contactMessages = fetchedMessages as any[];
     courses = fetchedCourses as any[];
     sessions = fetchedSessions as any[];
+    settings = fetchedSettings as any;
 
     // Local Search Filtering (Scalability - Client Side Filter logic for now)
     if (q) {
@@ -106,6 +111,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     { key: "inquiries", label: "Inquiries", count: contactMessages.length },
     { key: "courses", label: "Courses", count: courseCount },
     { key: "sessions", label: "Sessions" },
+    { key: "settings", label: "Settings" },
   ];
 
   return (
@@ -249,6 +255,11 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         {/* ========== INQUIRIES TAB ========== */}
         {tab === "inquiries" && (
           <ContactMessageManager messages={contactMessages} />
+        )}
+
+        {/* ========== SETTINGS TAB ========== */}
+        {tab === "settings" && (
+          <AdminSettingsPanel settings={settings} />
         )}
       </div>
     </div>

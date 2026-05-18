@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Profile, Course, StudentTutorAssignment, Session, InviteCode, StudentApplication, TutorApplication, ContactMessage
+from .models import (
+    Profile, Course, StudentTutorAssignment, Session, 
+    InviteCode, StudentApplication, TutorApplication, ContactMessage,
+    GlobalSetting
+)
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -63,4 +67,9 @@ class InviteCodeSerializer(serializers.ModelSerializer):
 class ContactMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactMessage
+        fields = '__all__'
+
+class GlobalSettingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GlobalSetting
         fields = '__all__'

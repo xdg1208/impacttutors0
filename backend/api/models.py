@@ -182,3 +182,14 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"Message from {self.name}: {self.subject}"
+
+class GlobalSetting(models.Model):
+    whatsapp_group_link = models.URLField(max_length=500, blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _('Global Setting')
+        verbose_name_plural = _('Global Settings')
+
+    def __str__(self):
+        return "Global Settings"

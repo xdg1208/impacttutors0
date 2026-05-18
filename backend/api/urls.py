@@ -4,7 +4,7 @@ from .views import (
     ProfileViewSet, CourseViewSet, SessionViewSet, 
     StudentTutorAssignmentViewSet, InviteCodeViewSet,
     TutorApplicationViewSet, StudentApplicationViewSet, RegisterView,
-    ContactMessageViewSet, ChangePasswordView
+    ContactMessageViewSet, ChangePasswordView, GlobalSettingViewSet
 )
 
 router = DefaultRouter()
@@ -16,6 +16,7 @@ router.register(r'invites', InviteCodeViewSet)
 router.register(r'tutor-applications', TutorApplicationViewSet)
 router.register(r'student-applications', StudentApplicationViewSet)
 router.register(r'contact-messages', ContactMessageViewSet)
+router.register(r'settings', GlobalSettingViewSet, basename='settings')
 
 urlpatterns = [
     path('', include(router.urls)),
