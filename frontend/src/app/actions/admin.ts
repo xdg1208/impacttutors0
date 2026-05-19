@@ -246,10 +246,8 @@ export async function updateGlobalSettings(formData: FormData) {
   const whatsappLink = formData.get("whatsappLink") as string;
   const client = await api.auth();
   try {
-    // The list() method in GlobalSettingViewSet returns the singleton
-    // We can just use PATCH /settings/0/ if the router is set up for it, 
-    // or better, a custom action. But given the list() singleton logic:
-    await client.patch("/settings/1/", { whatsapp_group_link: whatsappLink });
+    // Using the custom update_settings action which handles singleton logic
+    await client.patch("/settings/update_settings/", { whatsapp_group_link: whatsappLink });
     revalidatePath("/dashboard/admin");
     return { success: true };
   } catch (error: any) {

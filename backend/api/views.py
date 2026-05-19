@@ -37,6 +37,17 @@ class GlobalSettingViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['patch'], permission_classes=[permissions.IsAdminUser])
+    def update_settings(self, request):
+        instance = GlobalSetting.objects.first()
+        if not instance:
+            instance = GlobalSetting.objects.create()
+        
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
 class StudentApplicationViewSet(viewsets.ModelViewSet):
     queryset = StudentApplication.objects.all().order_by('-created_at')
     serializer_class = StudentApplicationSerializer
