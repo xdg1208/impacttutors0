@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { Send, CheckCircle2, Globe, BookOpen, GraduationCap, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { submitTutorApplication } from "@/app/actions/applications";
+import { submitTutorApplication, getGlobalSettings } from "@/app/actions/applications";
 
 export default function TutorApplyPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [whatsappLink, setWhatsappLink] = useState("https://chat.whatsapp.com/L8p5M460Rka9E4m9A9Y0pX");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -41,6 +42,12 @@ export default function TutorApplyPage() {
 
       setIsSubmitted(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // Fetch dynamic link
+      const settings = await getGlobalSettings();
+      if (settings?.whatsapp_group_link) {
+        setWhatsappLink(settings.whatsapp_group_link);
+      }
     } catch (error: any) {
        console.error("Submission error:", error);
        setError(error.message || "Failed to submit application. Please try again.");
@@ -64,7 +71,7 @@ export default function TutorApplyPage() {
             <p className="text-sm font-bold text-primary uppercase tracking-widest text-[10px]">Next Step</p>
             <p className="text-sm font-semibold">Join our WhatsApp recruitment group for interview scheduling and more info.</p>
             <a 
-              href="https://chat.whatsapp.com/L8p5M460Rka9E4m9A9Y0pX" // Placeholder group link
+              href={whatsappLink}
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 bg-[#25D366] text-white rounded-xl font-bold hover:shadow-lg transition-all"

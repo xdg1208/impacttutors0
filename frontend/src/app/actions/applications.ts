@@ -49,3 +49,12 @@ export async function submitTutorApplication(formData: FormData) {
     return { error: error.message || "Something went wrong with your application submission. Please double-check your form and try again." };
   }
 }
+export async function getGlobalSettings() {
+  try {
+    const data: any = await api.get("/settings/");
+    return data;
+  } catch (error) {
+    console.error("Error fetching settings:", error);
+    return null;
+  }
+}
