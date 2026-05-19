@@ -185,6 +185,7 @@ class ContactMessage(models.Model):
 
 class GlobalSetting(models.Model):
     whatsapp_group_link = models.URLField(max_length=500, blank=True, null=True)
+    telegram_chat_id = models.CharField(max_length=255, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

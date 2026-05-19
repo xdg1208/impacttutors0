@@ -1,18 +1,18 @@
-"use client";
-
 import { useState } from "react";
-import { updateGlobalSettings } from "@/app/actions/admin";
-import { Save, Link, Check, AlertCircle, Loader2 } from "lucide-react";
+import { updateGlobalSettings, syncTelegramChatId } from "@/app/actions/admin";
+import { Save, Link, Check, AlertCircle, Loader2, Send, RefreshCw } from "lucide-react";
 
 interface AdminSettingsPanelProps {
   settings: {
     id: number;
     whatsapp_group_link: string;
+    telegram_chat_id?: string;
   } | null;
 }
 
 export default function AdminSettingsPanel({ settings }: AdminSettingsPanelProps) {
   const [loading, setLoading] = useState(false);
+  const [syncLoading, setSyncLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -32,8 +32,23 @@ export default function AdminSettingsPanel({ settings }: AdminSettingsPanelProps
     }
   };
 
+  const handleSyncTelegram = async () => {
+    setSyncLoading(true);
+    setMessage(null);
+    
+    const result = await syncTelegramChatId();
+    
+    setSyncLoading(false);
+    if (result.success) {
+      setMessage({ type: 'success', text: result.message || 'Telegram Chat ID synced!' });
+      setTimeout(() => setMessage(null), 5000);
+    } else {
+      setMessage({ type: 'error', text: result.error || 'Failed to sync with Telegram.' });
+    }
+  };
+
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl space-y-6">
       <div className="premium-card rounded-2xl overflow-hidden">
         <div className="p-6 border-b border-border bg-section-alt/30">
           <h2 className="text-xl font-bold" style={{ fontFamily: "'Lora', serif" }}>Platform Settings</h2>
@@ -42,6 +57,7 @@ export default function AdminSettingsPanel({ settings }: AdminSettingsPanelProps
         
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="space-y-4">
+            {/* WhatsApp Link */}
             <div className="space-y-2">
               <label className="text-sm font-bold flex items-center gap-2">
                 <Link size={16} className="text-primary" />
@@ -55,8 +71,42 @@ export default function AdminSettingsPanel({ settings }: AdminSettingsPanelProps
                 className="w-full px-4 py-3 bg-section-alt border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               />
               <p className="text-[11px] text-muted leading-relaxed">
-                This link will be displayed to all approved tutors on their dashboard, allowing them to join the official community.
+                This link will be displayed to all approved tutors on their dashboard.
               </p>
+            </div>
+
+            <div className="border-t border-border pt-6 pb-2">
+              <label className="text-sm font-bold flex items-center gap-2 mb-4">
+                <Send size={16} className="text-blue-500" />
+                Telegram Notifications
+              </label>
+              
+              <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 space-y-4">
+                <div>
+                  <p className="text-xs font-bold text-blue-800 mb-1">Status</p>
+                  <div className="flex items-center gap-2">
+                    <div className={`h-2 w-2 rounded-full ${settings?.telegram_chat_id ? 'bg-green-500 animate-pulse' : 'bg-amber-500'}`} />
+                    <span className="text-xs font-medium text-blue-700">
+                      {settings?.telegram_chat_id ? `Active (ID: ${settings.telegram_chat_id})` : "Not Configured"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-[11px] text-blue-600 leading-relaxed italic">
+                    To automate setup: 1. Send any message to your bot on Telegram. 2. Click the sync button below.
+                  </p>
+                  <button 
+                    type="button"
+                    onClick={handleSyncTelegram}
+                    disabled={syncLoading}
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-blue-200 text-blue-700 rounded-lg font-bold text-xs hover:bg-blue-50 transition-all shadow-sm"
+                  >
+                    {syncLoading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                    {syncLoading ? "Syncing..." : "Sync Telegram Chat ID"}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 

@@ -12,6 +12,7 @@ from .serializers import (
     TutorApplicationSerializer, StudentApplicationSerializer, ContactMessageSerializer,
     GlobalSettingSerializer
 )
+from .telegram_utils import send_telegram_notification
 from .models import (
     Profile, Course, StudentTutorAssignment, Session, 
     InviteCode, StudentApplication, TutorApplication, ContactMessage,
@@ -48,6 +49,45 @@ class GlobalSettingViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(serializer.data)
 
+    @action(detail=False, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def sync_telegram(self, request):
+        import requests
+        bot_token = getattr(settings, 'TELEGRAM_BOT_TOKEN', None)
+        if not bot_token:
+            return Response({"error": "TELEGRAM_BOT_TOKEN not configured in backend .env"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        url = f"https://api.telegram.org/bot{bot_token}/getUpdates"
+        try:
+            response = requests.get(url, timeout=10)
+            data = response.json()
+            if not data.get("ok"):
+                return Response({"error": f"Telegram API error: {data.get('description')}"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            results = data.get("result", [])
+            if not results:
+                return Response({"error": "No recent messages found. Please message your bot first, then try again."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Get the latest chat ID
+            latest_chat_id = str(results[-1]["message"]["chat"]["id"])
+            
+            instance = GlobalSetting.objects.first()
+            if not instance:
+                instance = GlobalSetting.objects.create()
+            
+            instance.telegram_chat_id = latest_chat_id
+            instance.save()
+            
+            # Send a confirmation message
+            from .telegram_utils import send_telegram_notification
+            send_telegram_notification(f"✅ <b>Success!</b> Your Telegram Chat ID ({latest_chat_id}) has been linked to the Impact Tutors Platform.")
+            
+            return Response({
+                "message": "Telegram Chat ID synced successfully!",
+                "telegram_chat_id": latest_chat_id
+            })
+        except Exception as e:
+            return Response({"error": f"Failed to sync with Telegram: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class StudentApplicationViewSet(viewsets.ModelViewSet):
     queryset = StudentApplication.objects.all().order_by('-created_at')
     serializer_class = StudentApplicationSerializer
@@ -74,6 +114,16 @@ class StudentApplicationViewSet(viewsets.ModelViewSet):
                 print(f"Error sending student application email: {e}")
 
         threading.Thread(target=send_async_email).start()
+
+        # Send Telegram notification
+        telegram_msg = (
+            f"<b>🎓 New Student Application</b>\n\n"
+            f"<b>Name:</b> {application.student_name}\n"
+            f"<b>Grade:</b> {application.grade_level}\n"
+            f"<b>Curriculum:</b> {application.curriculum}\n"
+            f"<b>Contact:</b> {application.contact_detail} ({application.preferred_contact_method})"
+        )
+        send_telegram_notification(telegram_msg)
 
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
@@ -115,6 +165,16 @@ class TutorApplicationViewSet(viewsets.ModelViewSet):
                 print(f"Error sending tutor application email: {e}")
 
         threading.Thread(target=send_async_email).start()
+
+        # Send Telegram notification
+        telegram_msg = (
+            f"<b>👨‍🏫 New Tutor Application</b>\n\n"
+            f"<b>Name:</b> {application.full_name}\n"
+            f"<b>Email:</b> {application.email}\n"
+            f"<b>Subjects:</b> {application.subjects}\n"
+            f"<b>Contact:</b> {application.contact_detail} ({application.preferred_contact_method})"
+        )
+        send_telegram_notification(telegram_msg)
 
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
@@ -357,6 +417,15 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
                 print(f"Error sending inquiry email: {e}")
 
         threading.Thread(target=send_async_email).start()
+
+        # Send Telegram notification
+        telegram_msg = (
+            f"<b>✉️ New Inquiry</b>\n\n"
+            f"<b>Name:</b> {message.name}\n"
+            f"<b>Subject:</b> {message.subject}\n"
+            f"<b>Message:</b> {message.message[:200]}..."
+        )
+        send_telegram_notification(telegram_msg)
 
 class ChangePasswordView(generics.UpdateAPIView):
     serializer_class = UserSerializer

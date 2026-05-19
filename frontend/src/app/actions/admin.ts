@@ -254,3 +254,13 @@ export async function updateGlobalSettings(formData: FormData) {
     return { error: error.message };
   }
 }
+export async function syncTelegramChatId() {
+  const client = await api.auth();
+  try {
+    const data: any = await client.post("/settings/sync_telegram/");
+    revalidatePath("/dashboard/admin");
+    return { success: true, message: data.message, chat_id: data.telegram_chat_id };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}

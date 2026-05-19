@@ -17,6 +17,14 @@ export default function ApplicationDetailManager({ studentApps, tutorApps }: App
   const [selectedApp, setSelectedApp] = useState<any | null>(null);
   const [type, setType] = useState<'student' | 'tutor' | null>(null);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleClose = () => {
+    setSelectedApp(null);
+    setType(null);
+    setStatus(null);
+    setGeneratedCode(null);
+  };
 
   const handleApprove = async () => {
     if (!selectedApp || !type) return;
