@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { updateGlobalSettings, syncTelegramChatId } from "@/app/actions/admin";
 import { Save, Link, Check, AlertCircle, Loader2, Send, RefreshCw } from "lucide-react";

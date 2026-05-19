@@ -34,6 +34,7 @@ export default async function TutorDashboard() {
   // Fetch data in parallel
   let courses: any[] = [];
   let sessions: any[] = [];
+  let whatsappLink = "https://chat.whatsapp.com/YOUR_DEFAULT_LINK";
   
   try {
     const [fetchedCourses, fetchedSessions, fetchedSettings] = await Promise.all([
@@ -44,7 +45,9 @@ export default async function TutorDashboard() {
     courses = fetchedCourses as any[];
     sessions = fetchedSessions as any[];
     const settings = fetchedSettings as any;
-    const whatsappLink = settings?.whatsapp_group_link || "https://chat.whatsapp.com/YOUR_DEFAULT_LINK";
+    if (settings?.whatsapp_group_link) {
+      whatsappLink = settings.whatsapp_group_link;
+    }
   } catch (error) {
     console.error("Error fetching tutor dashboard data:", error);
   }
