@@ -45,8 +45,8 @@ export default function ContactPage() {
               <ContactItem 
                 icon={<Mail size={22} />}
                 title="Email Us"
-                content="hello@impacttutors.com"
-                href="mailto:hello@impacttutors.com"
+                content="info@impacttutors.com.ng"
+                href="mailto:info@impacttutors.com.ng"
               />
               <ContactItem 
                 icon={<Phone size={22} />}

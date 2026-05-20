@@ -69,8 +69,8 @@ export default function Footer() {
               </div>
               <div>
                 <p className="text-[11px] text-slate-500 mb-0.5 uppercase tracking-wider">Email Us</p>
-                <a href="mailto:hello@impacttutors.com" className="text-sm font-medium hover:text-primary transition-colors duration-300">
-                  hello@impacttutors.com
+                <a href="mailto:info@impacttutors.com.ng" className="text-sm font-medium hover:text-primary transition-colors duration-300">
+                  info@impacttutors.com.ng
                 </a>
               </div>
             </li>
