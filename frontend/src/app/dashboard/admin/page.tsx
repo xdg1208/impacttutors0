@@ -1,10 +1,11 @@
-import { api } from "@/lib/api";
+import { api } from "@/lib/api"
+import { serverApi } from "@/lib/server-api";
 import { redirect } from "next/navigation";
 import AdminDashboardContent from "@/components/admin/AdminDashboardContent";
 
 export default async function AdminDashboard({ searchParams }: { searchParams: Promise<{ tab?: string, q?: string }> }) {
   const { tab = "applications", q = "" } = await searchParams;
-  const client = await api.auth();
+  const client = await serverApi.auth();
 
   let profile: any = null;
   let shouldRedirect = false;

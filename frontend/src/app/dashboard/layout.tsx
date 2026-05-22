@@ -1,4 +1,5 @@
-import { api } from "@/lib/api";
+import { api } from "@/lib/api"
+import { serverApi } from "@/lib/server-api";
 import { redirect } from "next/navigation";
 import { DashboardSidebar, DashboardHeader } from "@/components/dashboard/DashboardNav";
 
@@ -7,7 +8,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const client = await api.auth();
+  const client = await serverApi.auth();
   
   const profile = await client.get("/profiles/me/").catch(() => null);
   

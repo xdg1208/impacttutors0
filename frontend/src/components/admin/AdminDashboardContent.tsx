@@ -5,7 +5,7 @@ import {
   Users, GraduationCap, BookOpen, Activity, Calendar, Video, RefreshCw, Loader2
 } from "lucide-react";
 import Link from "next/link";
-import { api } from "@/lib/api";
+import { api } from "@/lib/api"
 import ApplicationDetailManager from "@/components/admin/ApplicationDetailManager";
 import StudentDataManager from "@/components/admin/StudentDataManager";
 import TutorDataManager from "@/components/admin/TutorDataManager";

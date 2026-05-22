@@ -1,8 +1,9 @@
-import { api } from "@/lib/api";
+import { api } from "@/lib/api"
+import { serverApi } from "@/lib/server-api";
 import { redirect } from "next/navigation";
 
 export default async function DashboardRoot() {
-  const client = await api.auth();
+  const client = await serverApi.auth();
   
   let profile: any = null;
   let shouldRedirect = false;

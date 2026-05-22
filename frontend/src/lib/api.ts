@@ -1,5 +1,3 @@
-import { cookies } from "next/headers";
-
 // Helper to ensure the base URL ends with /api (but not /api/)
 const getBaseUrl = () => {
   let base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
@@ -13,12 +11,12 @@ const getBaseUrl = () => {
 
 export const API_BASE_URL = getBaseUrl();
 
-type FetchOptions = RequestInit & {
+export type FetchOptions = RequestInit & {
   params?: Record<string, string | number>;
   token?: string;
 };
 
-async function betterFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
+export async function betterFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { params, token, ...init } = options;
   
   // Ensure endpoint starts with a slash
@@ -109,22 +107,4 @@ export const api = {
   
   delete: <T>(endpoint: string, options?: FetchOptions) => 
     betterFetch<T>(endpoint, { ...options, method: 'DELETE' }),
-
-  // Helper for server components
-  auth: async () => {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('access_token')?.value;
-    return {
-      get: <T>(endpoint: string, options?: FetchOptions) => 
-        betterFetch<T>(endpoint, { ...options, token, method: 'GET' }),
-      post: <T>(endpoint: string, body?: any, options?: FetchOptions) => 
-        betterFetch<T>(endpoint, { ...options, token, method: 'POST', body: JSON.stringify(body) }),
-      put: <T>(endpoint: string, body?: any, options?: FetchOptions) => 
-        betterFetch<T>(endpoint, { ...options, token, method: 'PUT', body: JSON.stringify(body) }),
-      patch: <T>(endpoint: string, body?: any, options?: FetchOptions) => 
-        betterFetch<T>(endpoint, { ...options, token, method: 'PATCH', body: JSON.stringify(body) }),
-      delete: <T>(endpoint: string, options?: FetchOptions) => 
-        betterFetch<T>(endpoint, { ...options, token, method: 'DELETE' }),
-    };
-  }
 };

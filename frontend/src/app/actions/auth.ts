@@ -3,7 +3,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { api } from "@/lib/api";
+import { api } from "@/lib/api"
+import { serverApi } from "@/lib/server-api";
 
 export async function signUp(formData: FormData) {
   const email = formData.get("email") as string;
@@ -120,7 +121,7 @@ export async function changePassword(formData: FormData) {
   }
 
   try {
-    const client = await api.auth();
+    const client = await serverApi.auth();
     await client.patch("/auth/change-password/", {
       old_password,
       new_password,

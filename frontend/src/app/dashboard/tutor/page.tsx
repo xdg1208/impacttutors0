@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
-import { api } from "@/lib/api";
+import { api } from "@/lib/api"
+import { serverApi } from "@/lib/server-api";
 import Link from "next/link";
 import { 
   Users, 
@@ -12,7 +13,7 @@ import {
 import { redirect } from "next/navigation";
 
 export default async function TutorDashboard() {
-  const client = await api.auth();
+  const client = await serverApi.auth();
 
   let profile: any = null;
   let shouldRedirect = false;

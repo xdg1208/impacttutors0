@@ -1,10 +1,11 @@
 "use server";
 
-import { api } from "@/lib/api";
+import { api } from "@/lib/api"
+import { serverApi } from "@/lib/server-api";
 import { revalidatePath } from "next/cache";
 
 export async function approveApplication(applicationId: string, type: 'student' | 'tutor') {
-  const client = await api.auth();
+  const client = await serverApi.auth();
   const endpoint = type === 'student' ? 'student-applications' : 'tutor-applications';
   try {
     await client.post(`/${endpoint}/${applicationId}/approve/`);
@@ -16,7 +17,7 @@ export async function approveApplication(applicationId: string, type: 'student' 
 }
 
 export async function rejectApplication(id: string, type: 'student' | 'tutor') {
-  const client = await api.auth();
+  const client = await serverApi.auth();
   const endpoint = type === 'student' ? 'student-applications' : 'tutor-applications';
   try {
     await client.post(`/${endpoint}/${id}/reject/`);
@@ -32,7 +33,7 @@ export async function generateInviteCode(formData: FormData) {
   const role = formData.get("role") as 'student' | 'tutor';
   const applicationId = formData.get("applicationId") as string;
   
-  const client = await api.auth();
+  const client = await serverApi.auth();
   try {
     const payload: any = { 
       target_email: email || null,
@@ -53,7 +54,7 @@ export async function generateInviteCode(formData: FormData) {
 }
 
 export async function deleteInviteCode(codeId: string) {
-  const client = await api.auth();
+  const client = await serverApi.auth();
   try {
     await client.delete(`/invites/${codeId}/`);
     revalidatePath("/dashboard/admin");
@@ -72,7 +73,7 @@ export async function createCourse(formData: FormData) {
 
   if (!title || !subject) return { error: "Title and subject are required." };
 
-  const client = await api.auth();
+  const client = await serverApi.auth();
   try {
     await client.post("/courses/", {
       title,
@@ -100,7 +101,7 @@ export async function updateCourse(courseId: string, formData: FormData) {
   const tutorId = formData.get("tutorId") as string;
   const meetLink = formData.get("meetLink") as string;
 
-  const client = await api.auth();
+  const client = await serverApi.auth();
   try {
     await client.patch(`/courses/${courseId}/`, {
       title,
@@ -118,7 +119,7 @@ export async function updateCourse(courseId: string, formData: FormData) {
 }
 
 export async function deleteCourse(courseId: string) {
-  const client = await api.auth();
+  const client = await serverApi.auth();
   try {
     await client.delete(`/courses/${courseId}/`);
     revalidatePath("/dashboard/admin");
@@ -129,7 +130,7 @@ export async function deleteCourse(courseId: string) {
 }
 
 export async function bulkDeleteCourses(ids: string[]) {
-  const client = await api.auth();
+  const client = await serverApi.auth();
   try {
     await client.post("/courses/bulk-delete/", { ids });
     revalidatePath("/dashboard/admin");
@@ -148,7 +149,7 @@ export async function createSession(formData: FormData) {
 
   if (!courseId || !title || !startTime) return { error: "Course, title, and start time are required." };
 
-  const client = await api.auth();
+  const client = await serverApi.auth();
   try {
     await client.post("/sessions/", {
       course: courseId,
@@ -167,7 +168,7 @@ export async function createSession(formData: FormData) {
 }
 
 export async function deleteSession(sessionId: string) {
-  const client = await api.auth();
+  const client = await serverApi.auth();
   try {
     await client.delete(`/sessions/${sessionId}/`);
     revalidatePath("/dashboard/admin");
@@ -178,7 +179,7 @@ export async function deleteSession(sessionId: string) {
 }
 
 export async function bulkDeleteSessions(ids: string[]) {
-  const client = await api.auth();
+  const client = await serverApi.auth();
   try {
     await client.post("/sessions/bulk-delete/", { ids });
     revalidatePath("/dashboard/admin");
@@ -189,7 +190,7 @@ export async function bulkDeleteSessions(ids: string[]) {
 }
 
 export async function toggleOnboardingStatus(userId: string, status: boolean) {
-  const client = await api.auth();
+  const client = await serverApi.auth();
   try {
     await client.post(`/profiles/${userId}/toggle_onboarding/`, { is_onboarded: status });
     revalidatePath("/dashboard/admin");
@@ -205,7 +206,7 @@ export async function activateAndEnroll(formData: FormData) {
   const courseTitle = formData.get("courseTitle") as string;
   const subject = formData.get("courseTitle") as string;
   
-  const client = await api.auth();
+  const client = await serverApi.auth();
   try {
     // 1. Activate Profile
     await client.post(`/profiles/${studentId}/toggle_onboarding/`, { is_onboarded: true });
@@ -232,7 +233,7 @@ export async function activateAndEnroll(formData: FormData) {
 }
 
 export async function deleteContactMessage(id: number) {
-  const client = await api.auth();
+  const client = await serverApi.auth();
   try {
     await client.delete(`/contact-messages/${id}/`);
     revalidatePath("/dashboard/admin");
@@ -244,7 +245,7 @@ export async function deleteContactMessage(id: number) {
 
 export async function updateGlobalSettings(formData: FormData) {
   const whatsappLink = formData.get("whatsappLink") as string;
-  const client = await api.auth();
+  const client = await serverApi.auth();
   try {
     // Using the custom update_settings action which handles singleton logic
     await client.patch("/settings/update_settings/", { whatsapp_group_link: whatsappLink });
@@ -255,7 +256,7 @@ export async function updateGlobalSettings(formData: FormData) {
   }
 }
 export async function syncTelegramChatId() {
-  const client = await api.auth();
+  const client = await serverApi.auth();
   try {
     const data: any = await client.post("/settings/sync_telegram/");
     revalidatePath("/dashboard/admin");
