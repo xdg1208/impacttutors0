@@ -70,7 +70,7 @@ export default function ContactPage() {
             <div className="pt-6 space-y-3 border-t border-border max-w-xs">
               <p className="text-xs font-bold uppercase tracking-[0.15em] text-muted">Follow Us</p>
               <div className="flex gap-3">
-                <a href="https://instagram.com/impact_tutors" className="p-3 premium-card rounded-2xl bg-card hover:!bg-primary hover:!text-white hover:!border-primary transition-all duration-300">
+                <a href="https://instagram.com/impacttutors12" className="p-3 premium-card rounded-2xl bg-card hover:!bg-primary hover:!text-white hover:!border-primary transition-all duration-300">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
                 </a>
                 <a href="https://facebook.com/ImpactTutorsOnlineAcademy" className="p-3 premium-card rounded-2xl bg-card hover:!bg-primary hover:!text-white hover:!border-primary transition-all duration-300">

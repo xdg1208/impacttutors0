@@ -4,12 +4,13 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { ChevronRight, Mail, Lock } from "lucide-react";
+import { ChevronRight, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { signIn } from "@/app/actions/auth";
 
 function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
 
@@ -85,11 +86,18 @@ function LoginForm() {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
                 <input
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   placeholder="••••••••"
-                  className="w-full pl-11 pr-4 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm"
+                  className="w-full pl-11 pr-12 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-primary transition-colors p-1"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </div>
           </div>
@@ -100,7 +108,7 @@ function LoginForm() {
             className="w-full py-4 bg-primary text-white rounded-xl font-bold hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
           >
             {loading ? "Signing In..." : "Log In"}
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" />
+             <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" />
           </button>
         </form>
 
