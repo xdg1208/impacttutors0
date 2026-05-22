@@ -22,9 +22,10 @@ import { deleteInviteCode } from "@/app/actions/admin";
 interface AdminDashboardContentProps {
   initialTab: string;
   initialQuery: string;
+  token?: string;
 }
 
-export default function AdminDashboardContent({ initialTab, initialQuery }: AdminDashboardContentProps) {
+export default function AdminDashboardContent({ initialTab, initialQuery, token }: AdminDashboardContentProps) {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>({
     students: [],
@@ -43,7 +44,6 @@ export default function AdminDashboardContent({ initialTab, initialQuery }: Admi
     setLoading(true);
     setError(null);
     try {
-      // Note: In client side, we don't need api.auth() because cookies are sent automatically by the browser
       const [
         allProfiles,
         fetchedTutorApps,
@@ -54,14 +54,14 @@ export default function AdminDashboardContent({ initialTab, initialQuery }: Admi
         fetchedSessions,
         fetchedSettings
       ] = await Promise.all([
-        api.get("/profiles/").catch(() => []),
-        api.get("/tutor-applications/").catch(() => []),
-        api.get("/student-applications/").catch(() => []),
-        api.get("/invites/").catch(() => []),
-        api.get("/contact-messages/").catch(() => []),
-        api.get("/courses/").catch(() => []),
-        api.get("/sessions/").catch(() => []),
-        api.get("/settings/").catch(() => null),
+        api.get("/profiles/", { token }).catch(() => []),
+        api.get("/tutor-applications/", { token }).catch(() => []),
+        api.get("/student-applications/", { token }).catch(() => []),
+        api.get("/invites/", { token }).catch(() => []),
+        api.get("/contact-messages/", { token }).catch(() => []),
+        api.get("/courses/", { token }).catch(() => []),
+        api.get("/sessions/", { token }).catch(() => []),
+        api.get("/settings/", { token }).catch(() => null),
       ]);
 
       setData({

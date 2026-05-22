@@ -1,11 +1,14 @@
 import { api } from "@/lib/api"
 import { serverApi } from "@/lib/server-api";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AdminDashboardContent from "@/components/admin/AdminDashboardContent";
 
 export default async function AdminDashboard({ searchParams }: { searchParams: Promise<{ tab?: string, q?: string }> }) {
   const { tab = "applications", q = "" } = await searchParams;
   const client = await serverApi.auth();
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
 
   let profile: any = null;
   let shouldRedirect = false;
@@ -47,7 +50,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         </form>
       </div>
 
-      <AdminDashboardContent initialTab={tab} initialQuery={q} />
+      <AdminDashboardContent initialTab={tab} initialQuery={q} token={token} />
     </div>
   );
 }
