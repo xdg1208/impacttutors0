@@ -73,6 +73,19 @@ export async function createCourse(formData: FormData) {
 
   if (!title || !subject) return { error: "Title and subject are required." };
 
+  const schedules: any[] = [];
+  for (let i = 1; i <= 3; i++) {
+    const day = formData.get(`day${i}`) as string;
+    const time = formData.get(`time${i}`) as string;
+    if (day && time) {
+      schedules.push({
+        day_of_week: day.toLowerCase(),
+        start_time: time,
+        duration_minutes: 60
+      });
+    }
+  }
+
   const client = await serverApi.auth();
   try {
     await client.post("/courses/", {
@@ -84,7 +97,8 @@ export async function createCourse(formData: FormData) {
       status: "active",
       category: subject,
       description: title,
-      slug: title.toLowerCase().replace(/ /g, '-') + '-' + Date.now(),
+      slug: title.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Date.now(),
+      schedules: schedules
     });
 
     revalidatePath("/dashboard/admin");
@@ -101,6 +115,19 @@ export async function updateCourse(courseId: string, formData: FormData) {
   const tutorId = formData.get("tutorId") as string;
   const meetLink = formData.get("meetLink") as string;
 
+  const schedules: any[] = [];
+  for (let i = 1; i <= 3; i++) {
+    const day = formData.get(`day${i}`) as string;
+    const time = formData.get(`time${i}`) as string;
+    if (day && time) {
+      schedules.push({
+        day_of_week: day.toLowerCase(),
+        start_time: time,
+        duration_minutes: 60
+      });
+    }
+  }
+
   const client = await serverApi.auth();
   try {
     await client.patch(`/courses/${courseId}/`, {
@@ -109,6 +136,7 @@ export async function updateCourse(courseId: string, formData: FormData) {
       students: studentIds,
       tutor: tutorId || null,
       meet_link: meetLink || null,
+      schedules: schedules
     });
 
     revalidatePath("/dashboard/admin");
@@ -117,6 +145,7 @@ export async function updateCourse(courseId: string, formData: FormData) {
     return { error: error.message };
   }
 }
+
 
 export async function deleteCourse(courseId: string) {
   const client = await serverApi.auth();
@@ -245,10 +274,14 @@ export async function deleteContactMessage(id: number) {
 
 export async function updateGlobalSettings(formData: FormData) {
   const whatsappLink = formData.get("whatsappLink") as string;
+  const studentWhatsappLink = formData.get("studentWhatsappLink") as string;
   const client = await serverApi.auth();
   try {
     // Using the custom update_settings action which handles singleton logic
-    await client.patch("/settings/update_settings/", { whatsapp_group_link: whatsappLink });
+    await client.patch("/settings/update_settings/", { 
+      whatsapp_group_link: whatsappLink,
+      student_whatsapp_group_link: studentWhatsappLink
+    });
     revalidatePath("/dashboard/admin");
     return { success: true };
   } catch (error: any) {
@@ -265,3 +298,55 @@ export async function syncTelegramChatId() {
     return { error: error.message };
   }
 }
+
+export async function markStudentAttendance(sessionId: string, feedback: string) {
+  const client = await serverApi.auth();
+  try {
+    await client.post(`/sessions/${sessionId}/student-mark-attendance/`, { feedback });
+    revalidatePath("/dashboard/student");
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}
+
+export async function markTutorAttendance(sessionId: string, confirmedStudent: boolean) {
+  const client = await serverApi.auth();
+  try {
+    await client.post(`/sessions/${sessionId}/tutor-mark-attendance/`, { confirmed_student: confirmedStudent });
+    revalidatePath("/dashboard/tutor");
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}
+
+export async function updateCourseSchedules(courseId: string, formData: FormData) {
+  const schedules: any[] = [];
+  for (let i = 1; i <= 3; i++) {
+    const day = formData.get(`day${i}`) as string;
+    const time = formData.get(`time${i}`) as string;
+    if (day && time) {
+      schedules.push({
+        day_of_week: day.toLowerCase(),
+        start_time: time,
+        duration_minutes: 60
+      });
+    }
+  }
+
+  const client = await serverApi.auth();
+  try {
+    console.log('[updateCourseSchedules] Sending PATCH to /courses/' + courseId + '/', JSON.stringify({ schedules }));
+    const result: any = await client.patch(`/courses/${courseId}/`, {
+      schedules: schedules
+    });
+    console.log('[updateCourseSchedules] Success, schedules in response:', JSON.stringify(result?.schedules));
+    revalidatePath("/dashboard/admin");
+    return { success: true, data: result };
+  } catch (error: any) {
+    console.error('[updateCourseSchedules] ERROR:', error.message);
+    return { error: error.message };
+  }
+}
+

@@ -80,6 +80,29 @@ export default function CreateCourseForm({ students, tutors }: CreateCourseFormP
             className="w-full px-4 py-3 bg-section border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm" />
         </div>
 
+        <div className="md:col-span-2 space-y-3 pt-2">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted">Weekly Schedule (Up to 3 Sessions)</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map((num) => (
+              <div key={num} className="p-4 bg-section-alt rounded-xl border border-border space-y-2">
+                <p className="text-[10px] font-bold text-muted uppercase">Session {num}</p>
+                <select name={`day${num}`} className="w-full px-3 py-2 bg-card border border-border rounded-lg text-xs outline-none focus:ring-1 focus:ring-primary">
+                  <option value="">Select Day</option>
+                  <option value="monday">Monday</option>
+                  <option value="tuesday">Tuesday</option>
+                  <option value="wednesday">Wednesday</option>
+                  <option value="thursday">Thursday</option>
+                  <option value="friday">Friday</option>
+                  <option value="saturday">Saturday</option>
+                  <option value="sunday">Sunday</option>
+                </select>
+                <input type="time" name={`time${num}`} className="w-full px-3 py-2 bg-card border border-border rounded-lg text-xs outline-none focus:ring-1 focus:ring-primary" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+
         <button 
           type="submit" 
           disabled={loading}

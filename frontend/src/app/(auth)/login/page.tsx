@@ -81,7 +81,12 @@ function LoginForm() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Password</label>
+              <div className="flex justify-between items-center px-1">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted">Password</label>
+                <Link href="/forgot-password" className="text-xs font-bold text-primary hover:underline">
+                  Forgot Password?
+                </Link>
+              </div>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
                 <input
@@ -100,6 +105,7 @@ function LoginForm() {
                 </button>
               </div>
             </div>
+
           </div>
 
           <button

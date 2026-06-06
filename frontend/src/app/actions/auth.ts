@@ -132,3 +132,44 @@ export async function changePassword(formData: FormData) {
     return { error: error.message || "Failed to change password." };
   }
 }
+
+export async function forgotPassword(email: string) {
+  if (!email) return { error: "Email is required." };
+  try {
+    await api.post("/auth/forgot-password/", { email });
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message || "Failed to send reset code." };
+  }
+}
+
+export async function resetPassword(formData: FormData) {
+  const email = formData.get("email") as string;
+  const otp = formData.get("otp") as string;
+  const newPassword = formData.get("newPassword") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  if (!email || !otp || !newPassword || !confirmPassword) {
+    return { error: "All fields are required." };
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { error: "Passwords do not match." };
+  }
+
+  if (newPassword.length < 8) {
+    return { error: "Password must be at least 8 characters long." };
+  }
+
+  try {
+    await api.post("/auth/reset-password/", {
+      email,
+      otp,
+      new_password: newPassword
+    });
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message || "Failed to reset password." };
+  }
+}
+

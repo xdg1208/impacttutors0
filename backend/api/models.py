@@ -87,6 +87,15 @@ class Session(models.Model):
     notes = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=SessionStatus.choices, default=SessionStatus.SCHEDULED)
     created_by = models.ForeignKey(Profile, on_delete=models.SET_NULL, null=True, related_name='created_sessions')
+    
+    # Attendance fields
+    student_marked_present = models.BooleanField(default=False)
+    student_feedback = models.TextField(blank=True, null=True)
+    student_marked_at = models.DateTimeField(blank=True, null=True)
+    tutor_marked_held = models.BooleanField(default=False)
+    tutor_confirmed_student = models.BooleanField(default=False)
+    tutor_marked_at = models.DateTimeField(blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -184,7 +193,8 @@ class ContactMessage(models.Model):
         return f"Message from {self.name}: {self.subject}"
 
 class GlobalSetting(models.Model):
-    whatsapp_group_link = models.URLField(max_length=500, blank=True, null=True)
+    whatsapp_group_link = models.URLField(max_length=500, blank=True, null=True) # Tutor WhatsApp Link
+    student_whatsapp_group_link = models.URLField(max_length=500, blank=True, null=True) # Student WhatsApp Link
     telegram_chat_id = models.CharField(max_length=255, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -194,3 +204,37 @@ class GlobalSetting(models.Model):
 
     def __str__(self):
         return "Global Settings"
+
+class PasswordResetOTP(models.Model):
+    email = models.EmailField()
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+
+    def is_expired(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        return timezone.now() > self.created_at + timedelta(minutes=10)
+
+    def __str__(self):
+        return f"OTP for {self.email} ({'Used' if self.is_used else 'Active'})"
+
+class CourseSchedule(models.Model):
+    DAYS_OF_WEEK = [
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+        ('saturday', 'Saturday'),
+        ('sunday', 'Sunday'),
+    ]
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='schedules')
+    day_of_week = models.CharField(max_length=15, choices=DAYS_OF_WEEK)
+    start_time = models.TimeField()
+    duration_minutes = models.IntegerField(default=60)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.course.title} - {self.get_day_of_week_display()} at {self.start_time}"

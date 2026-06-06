@@ -11,6 +11,7 @@ import {
   User as UserIcon
 } from "lucide-react";
 import { redirect } from "next/navigation";
+import StudentAttendanceButton from "@/components/dashboard/StudentAttendanceButton";
 
 export default async function StudentDashboard() {
   const client = await serverApi.auth();
@@ -35,14 +36,19 @@ export default async function StudentDashboard() {
   // Fetch data in parallel to prevent waterfall
   let courses: any[] = [];
   let sessions: any[] = [];
+  let whatsappLink = "";
   
   try {
-    const [fetchedCourses, fetchedSessions] = await Promise.all([
+    const [fetchedCourses, fetchedSessions, fetchedSettings] = await Promise.all([
       client.get("/courses/").catch(() => []),
-      client.get("/sessions/", { params: { status: 'scheduled' } }).catch(() => [])
+      client.get("/sessions/", { params: { status: 'scheduled' } }).catch(() => []),
+      client.get("/settings/").catch(() => null)
     ]);
     courses = fetchedCourses as any[];
     sessions = fetchedSessions as any[];
+    if ((fetchedSettings as any)?.student_whatsapp_group_link) {
+      whatsappLink = (fetchedSettings as any).student_whatsapp_group_link;
+    }
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
   }
@@ -146,6 +152,7 @@ export default async function StudentDashboard() {
                           <Video size={16} />
                         </a>
                       )}
+                      <StudentAttendanceButton sessionId={session.id} isMarked={session.student_marked_present} />
                     </div>
                   </div>
                 ))}
@@ -197,7 +204,7 @@ export default async function StudentDashboard() {
           </div>
         </div>
 
-        {/* Academic Profile Sidebar */}
+        {/* Academic Profile Sidebar & WhatsApp Group */}
         <div className="space-y-4">
           <h2 className="text-xl font-bold" style={{ fontFamily: "'Lora', serif" }}>Academic Profile</h2>
           <div className="premium-card rounded-2xl p-6 border border-border bg-card space-y-6">
@@ -220,6 +227,21 @@ export default async function StudentDashboard() {
               </div>
             </div>
           </div>
+
+          {whatsappLink && (
+            <div className="premium-card rounded-2xl p-6 border border-border bg-card space-y-3">
+              <h3 className="font-bold text-sm">Student WhatsApp Group</h3>
+              <p className="text-[11px] text-muted leading-relaxed">Join your fellow students in our WhatsApp group to collaborate, share learning tips, and stay updated!</p>
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all text-center block"
+              >
+                Join Student WhatsApp Group
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </div>

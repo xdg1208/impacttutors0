@@ -11,6 +11,7 @@ import {
   ExternalLink
 } from "lucide-react";
 import { redirect } from "next/navigation";
+import TutorAttendanceButton from "@/components/dashboard/TutorAttendanceButton";
 
 export default async function TutorDashboard() {
   const client = await serverApi.auth();
@@ -152,6 +153,12 @@ export default async function TutorDashboard() {
                           <Video size={16} />
                         </a>
                       )}
+                      <TutorAttendanceButton 
+                        sessionId={session.id} 
+                        isHeld={session.tutor_marked_held} 
+                        studentConfirmed={session.tutor_confirmed_student}
+                        studentName={session.student_name || "Student"}
+                      />
                     </div>
                   </div>
                 ))}

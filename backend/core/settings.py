@@ -135,6 +135,15 @@ REST_FRAMEWORK = {
     ),
 }
 
+# Throttling for sensitive endpoints (password reset, etc.)
+REST_FRAMEWORK.setdefault('DEFAULT_THROTTLE_RATES', {})
+REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'].update({
+    'password_reset': os.getenv('PASSWORD_RESET_THROTTLE', '5/hour'),
+})
+
+# Attendance settings
+ATTENDANCE_MARK_WINDOW_HOURS = int(os.getenv('ATTENDANCE_MARK_WINDOW_HOURS', '6'))
+
 # JWT Settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),

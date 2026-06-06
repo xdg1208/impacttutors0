@@ -10,14 +10,94 @@ from .serializers import (
     UserSerializer, ProfileSerializer, CourseSerializer, 
     StudentTutorAssignmentSerializer, SessionSerializer, InviteCodeSerializer, 
     TutorApplicationSerializer, StudentApplicationSerializer, ContactMessageSerializer,
-    GlobalSettingSerializer
+    GlobalSettingSerializer, CourseScheduleSerializer
 )
 from .telegram_utils import send_telegram_notification
 from .models import (
-    Profile, Course, StudentTutorAssignment, Session, 
+    Profile, Course, StudentTutorAssignment, Session, SessionStatus,
     InviteCode, StudentApplication, TutorApplication, ContactMessage,
-    GlobalSetting
+    GlobalSetting, CourseSchedule, PasswordResetOTP
 )
+from .sendpulse import send_sendpulse_email
+from django.utils import timezone
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from .throttles import PasswordResetThrottle
+from django.db.models.signals import m2m_changed, post_save
+from django.dispatch import receiver
+import datetime
+
+def sync_course_sessions(course):
+    """
+    Generate recurring sessions (weekly timetable) for the course based on CourseSchedule.
+    All sessions are course-wide (no per-student copies).
+    """
+    schedules = course.schedules.all()
+    tutor = course.tutor
+
+    if not schedules:
+        return
+
+    now = timezone.now()
+    today = now.date()
+
+    # Generate sessions for the next 28 days
+    for day_offset in range(28):
+        future_date = today + datetime.timedelta(days=day_offset)
+        weekday_name = future_date.strftime('%A').lower()
+
+        day_schedules = schedules.filter(day_of_week=weekday_name)
+        for schedule in day_schedules:
+            naive_start = datetime.datetime.combine(future_date, schedule.start_time)
+            start_time = timezone.make_aware(naive_start, timezone.get_current_timezone())
+
+            if start_time < now:
+                continue
+
+            # Create session if not exists for EACH student in the course
+            students = course.students.all()
+            if not students.exists():
+                continue
+
+            for student in students:
+                exists = Session.objects.filter(
+                    course=course,
+                    student=student,
+                    start_time=start_time
+                ).exists()
+
+                if not exists:
+                    Session.objects.create(
+                        course=course,
+                        student=student,
+                        tutor=tutor,
+                        start_time=start_time,
+                        duration_minutes=schedule.duration_minutes,
+                        meet_link=course.meet_link,
+                        status=SessionStatus.SCHEDULED
+                    )
+
+    # Update tutor reference on future sessions if tutor changed
+    Session.objects.filter(
+        course=course,
+        status=SessionStatus.SCHEDULED,
+        start_time__gte=now
+    ).update(tutor=tutor)
+
+@receiver(m2m_changed, sender=Course.students.through)
+def course_students_changed(sender, instance, action, reverse, model, pk_set, **kwargs):
+    # When students are added/removed from a course, ensure course sessions exist.
+    # Sessions are course-wide (no per-student copies).
+    if action == 'post_add' and pk_set:
+        sync_course_sessions(instance)
+    elif action == 'post_remove' and pk_set:
+        # No action needed; sessions remain course-wide
+        pass
+
+@receiver(post_save, sender=CourseSchedule)
+def course_schedule_saved(sender, instance, created, **kwargs):
+    sync_course_sessions(instance.course)
+
 
 class GlobalSettingViewSet(viewsets.ModelViewSet):
     queryset = GlobalSetting.objects.all()
@@ -262,38 +342,46 @@ class SessionViewSet(viewsets.ModelViewSet):
     queryset = Session.objects.all()
     serializer_class = SessionSerializer
     
-    def perform_create(self, serializer):
-        try:
-            course = serializer.validated_data.get('course')
-            student = serializer.validated_data.get('student')
-            tutor = serializer.validated_data.get('tutor')
-            start_time = serializer.validated_data.get('start_time')
-            
-            # Debug logging for production visibility
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.info(f"Creating session for course: {course}, start_time: {start_time}")
-            
-            if course:
-                if not student:
-                    student = course.students.first()
-                if not tutor:
-                    tutor = course.tutor
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        course = serializer.validated_data.get('course')
+        start_time = serializer.validated_data.get('start_time')
+        tutor = serializer.validated_data.get('tutor') or course.tutor
+        duration_minutes = serializer.validated_data.get('duration_minutes', 60)
+        meet_link = serializer.validated_data.get('meet_link') or course.meet_link
+        
+        created_by = None
+        if self.request.user.is_authenticated:
+            try:
+                created_by = self.request.user.profile
+            except (AttributeError, Profile.DoesNotExist):
+                pass
                 
-            created_by = None
-            if self.request.user.is_authenticated:
-                try:
-                    created_by = self.request.user.profile
-                except (AttributeError, Profile.DoesNotExist):
-                    pass
+        students = course.students.all()
+        sessions_created = []
+        
+        if not students.exists():
+            return Response({"error": "Cannot create session for a course with no students."}, status=status.HTTP_400_BAD_REQUEST)
             
-            serializer.save(student=student, tutor=tutor, created_by=created_by)
-            logger.info("Session created successfully.")
-        except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"CRITICAL ERROR in Session create: {str(e)}", exc_info=True)
-            raise e
+        with transaction.atomic():
+            for student in students:
+                session = Session.objects.create(
+                    course=course,
+                    student=student,
+                    tutor=tutor,
+                    start_time=start_time,
+                    duration_minutes=duration_minutes,
+                    meet_link=meet_link,
+                    created_by=created_by,
+                    status=SessionStatus.SCHEDULED
+                )
+                sessions_created.append(session)
+                
+        # Return the first session as representative for the response
+        resp_serializer = self.get_serializer(sessions_created[0])
+        headers = self.get_success_headers(resp_serializer.data)
+        return Response(resp_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
     def get_queryset(self):
         user = self.request.user
@@ -305,9 +393,15 @@ class SessionViewSet(viewsets.ModelViewSet):
         try:
             profile = user.profile
             if profile.role == 'student':
-                return Session.objects.filter(student=profile)
+                # Students see their specific sessions
+                return Session.objects.filter(
+                    student=profile
+                ).select_related('course', 'tutor')
             elif profile.role == 'tutor':
-                return Session.objects.filter(tutor=profile)
+                # Tutors see sessions for all their assigned students
+                return Session.objects.filter(
+                    course__tutor=profile
+                ).select_related('course', 'student')
         except Profile.DoesNotExist:
             return Session.objects.none()
         
@@ -322,6 +416,47 @@ class SessionViewSet(viewsets.ModelViewSet):
         with transaction.atomic():
             deleted_count, _ = Session.objects.filter(id__in=ids).delete()
             return Response({"message": f"Successfully deleted {deleted_count} sessions"}, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post'], url_path='student-mark-attendance')
+    def student_mark_attendance(self, request, pk=None):
+        session = self.get_object()
+        if not request.user.is_staff and session.student.user != request.user:
+            return Response({"error": "You are not authorized to mark attendance for this session."}, status=status.HTTP_403_FORBIDDEN)
+        # Only allow students to mark attendance after the session has started
+        now = timezone.now()
+        window_hours = getattr(settings, 'ATTENDANCE_MARK_WINDOW_HOURS', 6)
+
+        if not session.start_time:
+            return Response({"error": "Session start time is not set."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Allow marking from start_time up to start_time + window_hours
+        allowed_start = session.start_time
+        allowed_end = session.start_time + datetime.timedelta(hours=window_hours)
+
+        if not (allowed_start <= now <= allowed_end):
+            return Response({"error": f"Attendance can only be marked between {allowed_start} and {allowed_end}."}, status=status.HTTP_400_BAD_REQUEST)
+
+        session.student_marked_present = True
+        session.student_feedback = request.data.get('feedback', '')
+        session.student_marked_at = now
+        if session.tutor_marked_held:
+            session.status = SessionStatus.COMPLETED
+        session.save()
+        return Response({"message": "Attendance marked successfully.", "status": session.status})
+
+    @action(detail=True, methods=['post'], url_path='tutor-mark-attendance')
+    def tutor_mark_attendance(self, request, pk=None):
+        session = self.get_object()
+        if not request.user.is_staff and session.tutor.user != request.user:
+            return Response({"error": "You are not authorized to mark attendance for this session."}, status=status.HTTP_403_FORBIDDEN)
+        
+        session.tutor_marked_held = True
+        session.tutor_confirmed_student = request.data.get('confirmed_student', True) == True or request.data.get('confirmed_student') == 'true'
+        session.tutor_marked_at = timezone.now()
+        session.status = 'completed'
+        session.save()
+        return Response({"message": "Attendance marked successfully.", "status": session.status})
+
 
 class StudentTutorAssignmentViewSet(viewsets.ModelViewSet):
     queryset = StudentTutorAssignment.objects.all()
@@ -454,3 +589,117 @@ class ChangePasswordView(generics.UpdateAPIView):
         self.object.set_password(new_password)
         self.object.save()
         return Response({"message": "Password updated successfully"}, status=status.HTTP_200_OK)
+
+class CourseScheduleViewSet(viewsets.ModelViewSet):
+    queryset = CourseSchedule.objects.all()
+    serializer_class = CourseScheduleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return CourseSchedule.objects.none()
+        if user.is_staff:
+            return CourseSchedule.objects.all()
+        # Return schedules for courses related to student or tutor
+        try:
+            profile = user.profile
+            if profile.role == 'student':
+                return CourseSchedule.objects.filter(course__students=profile)
+            elif profile.role == 'tutor':
+                return CourseSchedule.objects.filter(course__tutor=profile)
+        except Profile.DoesNotExist:
+            return CourseSchedule.objects.none()
+        return CourseSchedule.objects.none()
+
+    def perform_create(self, serializer):
+        schedule = serializer.save()
+        sync_course_sessions(schedule.course)
+
+    def perform_update(self, serializer):
+        schedule = serializer.save()
+        sync_course_sessions(schedule.course)
+
+class ForgotPasswordView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [PasswordResetThrottle]
+    
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            return Response({"message": "If this email is registered, you will receive an OTP code shortly."}, status=status.HTTP_200_OK)
+            
+        import random
+        import string
+        otp = ''.join(random.choices(string.digits, k=6))
+        
+        PasswordResetOTP.objects.filter(email__iexact=email, is_used=False).update(is_used=True)
+        PasswordResetOTP.objects.create(email=user.email, otp=otp)
+        
+        subject = "Your Password Reset OTP - Impact Tutors"
+        html_content = f"""
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; border-radius: 8px; max-width: 600px; margin: 0 auto; border: 1px solid #eee;">
+            <h2 style="color: #4F46E5; text-align: center;">Impact Tutors</h2>
+            <p>Hello,</p>
+            <p>We received a request to reset your password. Use the verification code below to proceed:</p>
+            <div style="background-color: #EEF2F6; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
+                <span style="font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #1E293B;">{otp}</span>
+            </div>
+            <p style="color: #64748B; font-size: 14px;">This code is valid for 10 minutes. If you did not request this, please ignore this email.</p>
+        </div>
+        """
+        text_content = f"Your Password Reset OTP is: {otp}. This code is valid for 10 minutes."
+        
+        send_sendpulse_email(
+            subject, 
+            html_content, 
+            text_content, 
+            user.email, 
+            to_name=user.profile.full_name if hasattr(user, 'profile') else "User"
+        )
+        
+        return Response({"message": "If this email is registered, you will receive an OTP code shortly."}, status=status.HTTP_200_OK)
+
+class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [PasswordResetThrottle]
+    
+    def post(self, request):
+        email = request.data.get('email')
+        otp = request.data.get('otp')
+        new_password = request.data.get('new_password')
+        
+        if not email or not otp or not new_password:
+            return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            reset_record = PasswordResetOTP.objects.filter(
+                email__iexact=email,
+                otp=otp,
+                is_used=False
+            ).latest('created_at')
+        except PasswordResetOTP.DoesNotExist:
+            return Response({"error": "Invalid or expired OTP code"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        if reset_record.is_expired():
+            reset_record.is_used = True
+            reset_record.save()
+            return Response({"error": "OTP code has expired"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        if len(new_password) < 8:
+            return Response({"error": "Password must be at least 8 characters long"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        user = User.objects.get(email__iexact=email)
+        user.set_password(new_password)
+        user.save()
+        
+        reset_record.is_used = True
+        reset_record.save()
+        
+        return Response({"message": "Password reset successfully!"}, status=status.HTTP_200_OK)
+

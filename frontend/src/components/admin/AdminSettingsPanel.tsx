@@ -8,6 +8,7 @@ interface AdminSettingsPanelProps {
   settings: {
     id: number;
     whatsapp_group_link: string;
+    student_whatsapp_group_link?: string;
     telegram_chat_id?: string;
   } | null;
 }
@@ -58,8 +59,8 @@ export default function AdminSettingsPanel({ settings }: AdminSettingsPanelProps
         </div>
         
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="space-y-4">
-            {/* WhatsApp Link */}
+          <div className="space-y-6">
+            {/* Tutor WhatsApp Link */}
             <div className="space-y-2">
               <label className="text-sm font-bold flex items-center gap-2">
                 <Link size={16} className="text-primary" />
@@ -76,6 +77,25 @@ export default function AdminSettingsPanel({ settings }: AdminSettingsPanelProps
                 This link will be displayed to all approved tutors on their dashboard.
               </p>
             </div>
+
+            {/* Student WhatsApp Link */}
+            <div className="space-y-2">
+              <label className="text-sm font-bold flex items-center gap-2">
+                <Link size={16} className="text-blue-500" />
+                Student WhatsApp Group Link
+              </label>
+              <input 
+                type="url" 
+                name="studentWhatsappLink"
+                defaultValue={settings?.student_whatsapp_group_link || ""}
+                placeholder="https://chat.whatsapp.com/..."
+                className="w-full px-4 py-3 bg-section-alt border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              />
+              <p className="text-[11px] text-muted leading-relaxed">
+                This link will be displayed to all students on their dashboard to prompt them to join the student group.
+              </p>
+            </div>
+
 
             <div className="border-t border-border pt-6 pb-2">
               <label className="text-sm font-bold flex items-center gap-2 mb-4">
