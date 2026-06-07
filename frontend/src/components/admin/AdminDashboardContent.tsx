@@ -360,7 +360,7 @@ export default function AdminDashboardContent({
 
         {/* ========== SESSIONS TAB ========== */}
         {tab === "sessions" && (
-          <CourseScheduleManager courses={data.courses} onRefresh={fetchData} />
+          <CourseScheduleManager courses={data.courses} />
         )}
 
         {/* ========== ATTENDANCE TAB ========== */}

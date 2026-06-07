@@ -321,27 +321,22 @@ export async function markTutorAttendance(sessionId: string, confirmedStudent: b
   }
 }
 
-export async function updateCourseSchedules(courseId: string, formData: FormData) {
-  const schedules: any[] = [];
-  for (let i = 1; i <= 3; i++) {
-    const day = formData.get(`day${i}`) as string;
-    const time = formData.get(`time${i}`) as string;
-    if (day && time) {
-      schedules.push({
-        day_of_week: day.toLowerCase(),
-        start_time: time,
-        duration_minutes: 60
-      });
-    }
-  }
+export async function updateCourseSchedules(courseId: string, schedules: { day: string; time: string }[]) {
+  const schedulesPayload = schedules
+    .filter(s => s.day && s.time)
+    .map(s => ({
+      day_of_week: s.day.toLowerCase(),
+      start_time: s.time,
+      duration_minutes: 60
+    }));
 
   const client = await serverApi.auth();
   try {
-    console.log('[updateCourseSchedules] Sending PATCH to /courses/' + courseId + '/', JSON.stringify({ schedules }));
+    console.log('[updateCourseSchedules] Sending PATCH, schedules:', JSON.stringify(schedulesPayload));
     const result: any = await client.patch(`/courses/${courseId}/`, {
-      schedules: schedules
+      schedules: schedulesPayload
     });
-    console.log('[updateCourseSchedules] Success, schedules in response:', JSON.stringify(result?.schedules));
+    console.log('[updateCourseSchedules] Saved schedules:', JSON.stringify(result?.schedules));
     revalidatePath("/dashboard/admin");
     return { success: true, data: result };
   } catch (error: any) {
