@@ -25,7 +25,17 @@ function LoginForm() {
     if (result?.error) {
       setError(result.error);
       setLoading(false);
+      return;
     }
+
+    // If server action returned a redirect path, perform a full navigation
+    if (result?.redirectPath) {
+      window.location.href = result.redirectPath;
+      return;
+    }
+
+    // Last-resort: reload to ensure cookies are applied
+    window.location.reload();
   }
 
   return (

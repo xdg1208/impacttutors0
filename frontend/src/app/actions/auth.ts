@@ -96,7 +96,7 @@ export async function signIn(formData: FormData) {
 
   if (redirectPath) {
     revalidatePath("/", "layout");
-    redirect(redirectPath);
+    return { redirectPath };
   }
 }
 
