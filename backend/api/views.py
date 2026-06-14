@@ -271,12 +271,14 @@ class TutorApplicationViewSet(viewsets.ModelViewSet):
         return Response({'status': 'application rejected'})
 
 class InviteCodeViewSet(viewsets.ModelViewSet):
-    queryset = InviteCode.objects.all().order_by('-created_at')
+    # select_related for FK links to applications to avoid N+1 when serializing
+    queryset = InviteCode.objects.select_related('student_application', 'tutor_application').order_by('-created_at')
     serializer_class = InviteCodeSerializer
     permission_classes = [permissions.IsAdminUser]
 
 class ProfileViewSet(viewsets.ModelViewSet):
-    queryset = Profile.objects.all()
+    # profile often needs the related user; select_related avoids extra queries
+    queryset = Profile.objects.select_related('user').all()
     serializer_class = ProfileSerializer
     
     @action(detail=False, methods=['get'])
@@ -298,26 +300,29 @@ class ProfileViewSet(viewsets.ModelViewSet):
         if not user.is_authenticated:
             return Profile.objects.none()
         if user.is_staff:
-            return Profile.objects.all()
-        return Profile.objects.filter(user=user)
+            return Profile.objects.select_related('user').all()
+        return Profile.objects.select_related('user').filter(user=user)
 
 class CourseViewSet(viewsets.ModelViewSet):
-    queryset = Course.objects.all()
+    # Include related tutor, students and schedules by default to prevent N+1 in serializers
+    queryset = Course.objects.select_related('tutor').prefetch_related('students', 'schedules').all()
     serializer_class = CourseSerializer
     
     def get_queryset(self):
         user = self.request.user
         if not user.is_authenticated:
             return Course.objects.none()
+        # Always include tutor (FK) and students/schedules to avoid N+1 when serializing
+        base_qs = Course.objects.select_related('tutor').prefetch_related('students', 'schedules')
         if user.is_staff:
-            return Course.objects.all()
+            return base_qs.all()
         
         try:
             profile = user.profile
             if profile.role == 'student':
-                return Course.objects.filter(students=profile)
+                return base_qs.filter(students=profile)
             elif profile.role == 'tutor':
-                return Course.objects.filter(tutor=profile)
+                return base_qs.filter(tutor=profile)
         except Profile.DoesNotExist:
             return Course.objects.none()
         
@@ -339,7 +344,8 @@ class CourseViewSet(viewsets.ModelViewSet):
             return Response({"message": f"Successfully deleted {deleted_count} courses"}, status=status.HTTP_204_NO_CONTENT)
 
 class SessionViewSet(viewsets.ModelViewSet):
-    queryset = Session.objects.all()
+    # include related student, tutor and course by default to avoid N+1
+    queryset = Session.objects.select_related('student', 'tutor', 'course').all()
     serializer_class = SessionSerializer
     
     def create(self, request, *args, **kwargs):
@@ -459,7 +465,8 @@ class SessionViewSet(viewsets.ModelViewSet):
 
 
 class StudentTutorAssignmentViewSet(viewsets.ModelViewSet):
-    queryset = StudentTutorAssignment.objects.all()
+    # student and tutor are FKs; select_related avoids extra queries when serializing
+    queryset = StudentTutorAssignment.objects.select_related('student', 'tutor').all()
     serializer_class = StudentTutorAssignmentSerializer
     permission_classes = [permissions.IsAdminUser]
 
@@ -488,7 +495,8 @@ class RegisterView(generics.CreateAPIView):
             return Response({"error": f"Registration code required for {role}s"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            invite = InviteCode.objects.get(code=invite_code.upper(), role=role, is_used=False)
+            # fetch related application links in the same query to avoid extra lookups
+            invite = InviteCode.objects.select_related('student_application', 'tutor_application').get(code=invite_code.upper(), role=role, is_used=False)
             # Optional: Lock code to email if provided in InviteCode
             if invite.target_email and invite.target_email.lower() != email.lower():
                 return Response({"error": "This code is assigned to a different email address"}, status=status.HTTP_400_BAD_REQUEST)
@@ -591,7 +599,8 @@ class ChangePasswordView(generics.UpdateAPIView):
         return Response({"message": "Password updated successfully"}, status=status.HTTP_200_OK)
 
 class CourseScheduleViewSet(viewsets.ModelViewSet):
-    queryset = CourseSchedule.objects.all()
+    # select_related course to avoid N+1 when serializing schedule.course.title
+    queryset = CourseSchedule.objects.select_related('course').all()
     serializer_class = CourseScheduleSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -600,14 +609,14 @@ class CourseScheduleViewSet(viewsets.ModelViewSet):
         if not user.is_authenticated:
             return CourseSchedule.objects.none()
         if user.is_staff:
-            return CourseSchedule.objects.all()
+            return CourseSchedule.objects.select_related('course').all()
         # Return schedules for courses related to student or tutor
         try:
             profile = user.profile
             if profile.role == 'student':
-                return CourseSchedule.objects.filter(course__students=profile)
+                return CourseSchedule.objects.select_related('course').filter(course__students=profile)
             elif profile.role == 'tutor':
-                return CourseSchedule.objects.filter(course__tutor=profile)
+                return CourseSchedule.objects.select_related('course').filter(course__tutor=profile)
         except Profile.DoesNotExist:
             return CourseSchedule.objects.none()
         return CourseSchedule.objects.none()

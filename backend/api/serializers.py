@@ -36,7 +36,8 @@ class CourseSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_student_names(self, obj):
-        return [student.full_name for student in obj.students.all()]
+        # Use values_list which will use the prefetched students when available
+        return list(obj.students.values_list('full_name', flat=True))
 
     def create(self, validated_data):
         schedules_data = validated_data.pop('schedules', [])
