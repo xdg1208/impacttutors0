@@ -50,16 +50,31 @@ function LoginForm() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/40 to-transparent" />
         <div className="absolute bottom-10 left-10 right-10 text-white space-y-3">
-          <h2 className="text-3xl font-bold" style={{ fontFamily: "'Lora', serif" }}>Welcome Back!</h2>
-          <p className="text-white/80 leading-relaxed">Log in to continue your personalized learning journey with Impact Tutors.</p>
+          <h2
+            className="text-3xl font-bold"
+            style={{ fontFamily: "'Lora', serif" }}
+          >
+            Welcome Back!
+          </h2>
+          <p className="text-white/80 leading-relaxed">
+            Log in to continue your personalized learning journey with Impact
+            Tutors.
+          </p>
         </div>
       </div>
 
       {/* Right: Form */}
       <div className="premium-card lg:rounded-r-2xl p-8 md:p-10 flex flex-col justify-center">
         <div className="space-y-2 mb-8">
-          <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Lora', serif" }}>Sign In</h1>
-          <p className="text-muted text-sm">Access your Impact Tutors dashboard</p>
+          <h1
+            className="text-2xl font-bold tracking-tight"
+            style={{ fontFamily: "'Lora', serif" }}
+          >
+            Sign In
+          </h1>
+          <p className="text-muted text-sm">
+            Access your Impact Tutors dashboard
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -68,7 +83,7 @@ function LoginForm() {
               {message}
             </div>
           )}
-          
+
           {error && (
             <div className="p-3.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-600 text-sm font-semibold rounded-xl">
               {error}
@@ -77,9 +92,14 @@ function LoginForm() {
 
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Email Address</label>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">
+                Email Address
+              </label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
+                <Mail
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+                  size={16}
+                />
                 <input
                   name="email"
                   type="email"
@@ -92,13 +112,21 @@ function LoginForm() {
 
             <div className="space-y-1.5">
               <div className="flex justify-between items-center px-1">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted">Password</label>
-                <Link href="/forgot-password" className="text-xs font-bold text-primary hover:underline">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted">
+                  Password
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs font-bold text-primary hover:underline"
+                >
                   Forgot Password?
                 </Link>
               </div>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
+                <Lock
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+                  size={16}
+                />
                 <input
                   name="password"
                   type={showPassword ? "text" : "password"}
@@ -115,7 +143,6 @@ function LoginForm() {
                 </button>
               </div>
             </div>
-
           </div>
 
           <button
@@ -124,14 +151,17 @@ function LoginForm() {
             className="w-full py-4 bg-primary text-white rounded-xl font-bold hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
           >
             {loading ? "Signing In..." : "Log In"}
-             <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" />
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" />
           </button>
         </form>
 
         <div className="mt-6 pt-6 border-t border-border text-center">
           <p className="text-lg text-muted">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="text-primary font-bold hover:underline">
+            <Link
+              href="/signup"
+              className="text-primary font-bold hover:underline"
+            >
               Sign Up
             </Link>
           </p>
