@@ -3,6 +3,7 @@ import dj_database_url
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
 
 load_dotenv()
 
@@ -10,14 +11,22 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-thcxe)adk2*)j(*_mf+qznm#0g_90e1cdjp9*$=r^-fi%m%5^o')
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
+
+# SECURITY WARNING: keep the secret key used in production secret!
+# Production requires SECRET_KEY from the environment — a missing key
+# refuses to boot instead of falling back to a publicly-known value.
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        # Development-only fallback. Never valid in production.
+        SECRET_KEY = 'django-insecure-dev-only-key-change-me'
+    else:
+        raise ImproperlyConfigured(
+            'SECRET_KEY is not set. Provide it via the SECRET_KEY '
+            'environment variable (see backend/.env.example).'
+        )
 
 ALLOWED_HOSTS = ['*']
 
