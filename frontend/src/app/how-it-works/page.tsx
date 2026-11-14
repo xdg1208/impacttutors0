@@ -1,12 +1,11 @@
 import { MessageSquare, UserPlus, BookOpen, Trophy } from "lucide-react";
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { api } from "@/lib/api";
 
 export default async function HowItWorksPage() {
   const cookieStore = await cookies();
   const hasToken = cookieStore.get("access_token")?.value;
-  const user = hasToken ? { id: "authenticated" } : null;
+  const authenticated = Boolean(hasToken);
   return (
     <div className="pt-28 pb-20 px-4 md:px-6">
       <div className="container mx-auto max-w-5xl">
@@ -64,10 +63,10 @@ export default async function HowItWorksPage() {
               Our admin team is standing by to match you with your perfect tutor. No marketplace stress, just personalized learning.
             </p>
             <Link
-              href={user ? "/dashboard" : "/student/apply"}
+              href={authenticated ? "/dashboard" : "/student/apply"}
               className="inline-block px-8 py-4 bg-white text-primary rounded-xl font-bold hover:shadow-xl transition-all duration-300"
             >
-              {user ? "Go to Your Dashboard" : "Get Started Today"}
+              {authenticated ? "Go to Your Dashboard" : "Get Started Today"}
             </Link>
           </div>
         </div>

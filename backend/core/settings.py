@@ -28,8 +28,6 @@ if not SECRET_KEY:
             'environment variable (see backend/.env.example).'
         )
 
-ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -45,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     
     # Local apps
     'api.apps.ApiConfig',
@@ -144,10 +143,13 @@ REST_FRAMEWORK = {
     ),
 }
 
-# Throttling for sensitive endpoints (password reset, etc.)
+# Throttling for sensitive endpoints (password reset, registration, public forms)
 REST_FRAMEWORK.setdefault('DEFAULT_THROTTLE_RATES', {})
 REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'].update({
+    'login': os.getenv('LOGIN_THROTTLE', '10/hour'),
     'password_reset': os.getenv('PASSWORD_RESET_THROTTLE', '5/hour'),
+    'register': os.getenv('REGISTER_THROTTLE', '10/hour'),
+    'anon_submit': os.getenv('ANON_SUBMIT_THROTTLE', '20/hour'),
 })
 
 # Attendance settings
@@ -156,19 +158,54 @@ ATTENDANCE_MARK_WINDOW_HOURS = int(os.getenv('ATTENDANCE_MARK_WINDOW_HOURS', '6'
 # JWT Settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': False,
+    # 7-day refresh window with rotation: a valid session survives the
+    # 1-hour access-token expiry via the frontend's refresh flow, and any
+    # refresh token can be individually revoked (blacklist) on password
+    # change/reset.
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    # Rotation + blacklist keep the refresh chain revocable: every minted
+    # refresh token is recorded, and password change/reset blacklists them.
+    # (BLACKLIST_AFTER_ROTATION is inert without the token_blacklist app
+    # and rotation actually enabled.)
+    'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
+# Hosts — production must be explicit; wildcard hosts enable host-header attacks.
+ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', '').split(',') if h.strip()]
+if not ALLOWED_HOSTS:
+    if DEBUG:
+        ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+    else:
+        raise ImproperlyConfigured(
+            'ALLOWED_HOSTS is not set. Provide a comma-separated list of '
+            'production hosts (see backend/.env.example).'
+        )
+
+# Transport/session security — enforced whenever DEBUG is off.
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 365
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+
 # CORS Settings
-CORS_ALLOWED_ORIGINS = [
-    origin for origin in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if origin
-] or [
-    "http://localhost:3000",
-    "https://impact-tutors.vercel.app",
-]
+_cors_env = [origin for origin in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if origin]
+if _cors_env:
+    CORS_ALLOWED_ORIGINS = _cors_env
+elif DEBUG:
+    CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
+else:
+    raise ImproperlyConfigured(
+        'CORS_ALLOWED_ORIGINS is not set. Provide a comma-separated list of '
+        'allowed frontend origins (see backend/.env.example).'
+    )
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -186,3 +223,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Telegram Configuration
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+
+# Where admin notifications (new applications / inquiries) are delivered.
+# Falls back to EMAIL_HOST_USER; emails are skipped when neither is set
+# (previously a None recipient broke the sender silently).
+NOTIFICATION_EMAIL = os.getenv('NOTIFICATION_EMAIL') or os.getenv('EMAIL_HOST_USER')

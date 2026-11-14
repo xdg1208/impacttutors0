@@ -1,50 +1,21 @@
 import Link from "next/link";
-import { ChevronRight, Globe, Code, Calculator, GraduationCap, Microscope, ShieldCheck, Music } from "lucide-react";
+import { ChevronRight, Sparkles } from "lucide-react";
+import { COURSE_CATEGORIES } from "@/lib/courses";
+import { api } from "@/lib/api";
 
-const courseCategories = [
-  {
-    id: "k12-adult",
-    title: "K-12 & Adult Classes",
-    description: "Personalized learning for school students and professionals looking to level up.",
-    icon: <GraduationCap size={28} />,
-    color: "bg-primary",
-    slug: "k12-adult",
-  },
-  {
-    id: "languages",
-    title: "Language Classes",
-    description: "Master Yoruba, Igbo, and Hausa with native-speaking experts from anywhere in the world.",
-    icon: <Globe size={28} />,
-    color: "bg-blue-600",
-    slug: "languages",
-  },
-  {
-    id: "coding-tech",
-    title: "Coding & Tech",
-    description: "Equip yourself with digital skills: Python, Web Development, and Tech Literacies.",
-    icon: <Code size={28} />,
-    color: "bg-accent",
-    slug: "coding-tech",
-  },
-  {
-    id: "music",
-    title: "Music Classes",
-    description: "Learn instruments and theory with professional musicians in private sessions.",
-    icon: <Music size={28} />, 
-    color: "bg-purple-600",
-    slug: "music",
-  },
-  {
-    id: "exam-prep",
-    title: "Global Exam Prep",
-    description: "Intensive 1-on-1 coaching for international certifications and entrance exams.",
-    icon: <ShieldCheck size={28} />, // Lucide 'ShieldCheck' exists but maybe others. Graduation cap used above.
-    color: "bg-slate-800 dark:bg-slate-600",
-    slug: "exam-prep",
-  },
-];
+export const metadata = {
+  title: "Our Courses | Impact Tutors",
+  description:
+    "Explore 1-on-1 tutoring programs: K-12 & adult classes, Nigerian languages, coding for kids, music, and global exam preparation.",
+};
 
-export default function CoursesPage() {
+export default async function CoursesPage() {
+  // Live programs are real, published courses from the backend (public,
+  // read-only endpoint). Any failure hides the section gracefully.
+  const livePrograms: any[] = await api
+    .get<any[]>("/courses/published/")
+    .catch(() => []);
+
   return (
     <div className="pt-28 pb-20 px-4 md:px-6">
       <div className="container mx-auto ">
@@ -55,15 +26,56 @@ export default function CoursesPage() {
             Our Most <span className="text-primary italic">Popular</span> Courses
           </h1>
           <p className="text-lg text-muted leading-relaxed text-center" style={{ fontFamily: "'Nunito', sans-serif" }}>
-            Let&apos;s join our famous class. The knowledge provided will definitely be useful for you.
+            Let's join our famous class. The knowledge provided will definitely be useful for you.
           </p>
         </div>
 
+        {/* Live Programs — published courses from the platform */}
+        {livePrograms.length > 0 && (
+          <div className="mb-16 space-y-6">
+            <div className="flex items-center justify-center gap-2">
+              <Sparkles size={16} className="text-primary" />
+              <h2 className="text-xl font-bold" style={{ fontFamily: "'Lora', serif" }}>
+                Live Programs Open for Enrollment
+              </h2>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {livePrograms.map((course) => (
+                <div
+                  key={course.id}
+                  className="premium-card bg-card p-7 flex flex-col h-full border border-border"
+                >
+                  <span className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest rounded-lg w-fit mb-4">
+                    {course.category}
+                  </span>
+                  <h3 className="text-lg font-bold mb-2" style={{ fontFamily: "'Lora', serif" }}>
+                    {course.seo_title || course.title}
+                  </h3>
+                  <p className="text-muted leading-relaxed text-sm flex-1 mb-4 line-clamp-3">
+                    {course.seo_description || course.description}
+                  </p>
+                  {course.tutor_name && (
+                    <p className="text-[11px] text-muted mb-4">
+                      Tutor: <strong className="text-foreground">{course.tutor_name}</strong>
+                    </p>
+                  )}
+                  <Link
+                    href="/student/apply"
+                    className="flex items-center gap-2 font-bold text-sm text-primary hover:gap-3 transition-all"
+                  >
+                    Apply Now <ChevronRight size={16} />
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Course Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courseCategories.map((course) => (
+          {COURSE_CATEGORIES.map((course) => (
             <Link
-              key={course.id}
+              key={course.slug}
               href={`/courses/${course.slug}`}
               className="premium-card bg-card p-7 group relative overflow-hidden flex flex-col h-full"
             >
@@ -71,11 +83,11 @@ export default function CoursesPage() {
                 {course.icon}
               </div>
               <h3 className="text-xl font-bold mb-3" style={{ fontFamily: "'Lora', serif" }}>{course.title}</h3>
-              <p className="text-muted leading-relaxed mb-6 flex-1 text-sm">{course.description}</p>
+              <p className="text-muted leading-relaxed mb-6 flex-1 text-sm">{course.tagline}</p>
               <div className="flex items-center gap-2 font-bold text-sm text-primary group-hover:gap-3 transition-all duration-300">
                 Learn More <ChevronRight size={16} />
               </div>
-              
+
               <div className={`absolute top-0 right-0 w-24 h-24 ${course.color} opacity-[0.04] rounded-bl-full -mr-8 -mt-8`} />
             </Link>
           ))}
@@ -88,7 +100,7 @@ export default function CoursesPage() {
             backgroundSize: "20px 20px"
           }} />
           <div className="relative z-10 space-y-3 max-w-xl">
-            <h2 className="text-2xl md:text-3xl font-bold">Don&apos;t see what you&apos;re looking for?</h2>
+            <h2 className="text-2xl md:text-3xl font-bold">Don't see what you're looking for?</h2>
             <p className="text-white/80 leading-relaxed" style={{ fontFamily: "'Nunito', sans-serif" }}>We offer custom tutoring packages for many more subjects. Tell us your needs.</p>
           </div>
           <Link

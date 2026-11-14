@@ -18,6 +18,7 @@ export default function ApplicationDetailManager({ studentApps, tutorApps }: App
   const [type, setType] = useState<'student' | 'tutor' | null>(null);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
 
   const handleClose = () => {
     setSelectedApp(null);
@@ -64,8 +65,6 @@ export default function ApplicationDetailManager({ studentApps, tutorApps }: App
       setLoading(false);
     }
   };
-
-  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
 
   const handleGenerateAndLinkCode = async () => {
     if (!selectedApp || !type) return;

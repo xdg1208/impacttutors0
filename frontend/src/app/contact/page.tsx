@@ -106,7 +106,7 @@ export default function ContactPage() {
                   <div className="grid md:grid-cols-2 gap-5">
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Full Name</label>
-                      <input name="name" type="text" required className="w-full px-5 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm" placeholder="John Doe" />
+                      <input name="name" type="text" required className="w-full px-5 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm" placeholder="Mary Benny" />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Email Address</label>

@@ -1,12 +1,20 @@
 // Helper to ensure the base URL ends with /api (but not /api/)
 const getBaseUrl = () => {
-  let base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-  // If the user provided the base domain without /api, add it
-  if (!base.includes('/api')) {
-    base = base.endsWith('/') ? `${base}api` : `${base}/api`;
+  const raw = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+  try {
+    // Parse properly: a naive `includes('/api')` check false-positives on
+    // hosts like http://api.example.com (the "://api" substring) and then
+    // never appends the /api path.
+    const url = new URL(raw);
+    if (!url.pathname.startsWith('/api')) {
+      url.pathname = `${url.pathname.replace(/\/$/, '')}/api`;
+    }
+    url.pathname = url.pathname.replace(/\/$/, '');
+    return url.toString().replace(/\/$/, '');
+  } catch {
+    // Malformed env value — fall back as-is rather than crash at import time.
+    return raw.replace(/\/$/, '');
   }
-  // Trim trailing slash for consistent concatenation
-  return base.endsWith('/') ? base.slice(0, -1) : base;
 };
 
 export const API_BASE_URL = getBaseUrl();
@@ -14,14 +22,20 @@ export const API_BASE_URL = getBaseUrl();
 export type FetchOptions = RequestInit & {
   params?: Record<string, string | number>;
   token?: string;
+  /**
+   * Override the API base for this call. Set to "/api" to route a
+   * browser-side fetch through the same-origin proxy (httpOnly-cookie
+   * auth) instead of calling the backend with an exposed token.
+   */
+  baseUrl?: string;
 };
 
 export async function betterFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
-  const { params, token, ...init } = options;
+  const { params, token, baseUrl, ...init } = options;
   
   // Ensure endpoint starts with a slash
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  let url = `${API_BASE_URL}${cleanEndpoint}`;
+  let url = `${baseUrl ?? API_BASE_URL}${cleanEndpoint}`;
   
   if (params) {
     const searchParams = new URLSearchParams();
@@ -32,7 +46,15 @@ export async function betterFetch<T>(endpoint: string, options: FetchOptions = {
   }
 
   const headers = new Headers(init.headers);
-  headers.set('Content-Type', 'application/json');
+  
+  // Only set Content-Type when we have a body — DELETE with
+  // Content-Type: application/json and no body confuses some proxies,
+  // and this also leaves the door open for multipart file uploads.
+  if (init.body) {
+    if (!headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
+  }
   
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);

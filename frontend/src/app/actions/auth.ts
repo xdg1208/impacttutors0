@@ -6,7 +6,17 @@ import { revalidatePath } from "next/cache";
 import { api } from "@/lib/api";
 import { serverApi } from "@/lib/server-api";
 
-export async function signUp(formData: FormData) {
+/** Explicit result shape so callers can narrow without `any` unions. */
+export type AuthActionResult =
+  | { error: string; redirectPath?: undefined; success?: undefined }
+  | { redirectPath: string; error?: undefined; success?: undefined }
+  | { success: true; error?: undefined; redirectPath?: undefined };
+
+function errMessage(error: unknown, fallback: string): string {
+  return error instanceof Error && error.message ? error.message : fallback;
+}
+
+export async function signUp(formData: FormData): Promise<AuthActionResult> {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const fullName = formData.get("fullName") as string;
@@ -31,33 +41,40 @@ export async function signUp(formData: FormData) {
       grade_level: gradeLevel,
       curriculum,
       phone,
+      school_level: formData.get("schoolLevel"),
+      country: formData.get("country"),
+      tutor_bio: formData.get("tutorBio"),
     });
-  } catch (error: any) {
-    if (error.message === "Failed to fetch") {
+  } catch (error: unknown) {
+    const message = errMessage(error, "We couldn't create your account. Please check your details and try again.");
+    if (message === "Failed to fetch") {
       return {
         error:
           "We're having trouble reaching our servers. Please check your internet connection and try again.",
       };
     }
     // Specific messaging for registration codes
-    if (error.message.includes("Registration Code")) {
+    if (message.includes("Registration Code")) {
       return {
         error:
           "The registration code you entered is invalid or has already been used. Please verify and try again.",
       };
     }
-    return {
-      error:
-        error.message ||
-        "We couldn't create your account. Please check your details and try again.",
-    };
+    return { error: message };
   }
 
   // After registration, log them in to get tokens
-  return await signIn(formData);
+  const signInResult = await signIn(formData);
+  if (signInResult.redirectPath) {
+    return signInResult;
+  }
+  // The account was created but auto-login did not complete (e.g. backend
+  // timing) — direct the user to the login page instead of surfacing a
+  // confusing sign-in error for a registration that actually succeeded.
+  return { success: true };
 }
 
-export async function signIn(formData: FormData) {
+export async function signIn(formData: FormData): Promise<AuthActionResult> {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
@@ -74,13 +91,13 @@ export async function signIn(formData: FormData) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60, // 1 hour
+      maxAge: 60 * 60, // 1 hour (matches ACCESS_TOKEN_LIFETIME)
     });
     cookieStore.set("refresh_token", tokens.refresh, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24, // 1 day
+      maxAge: 60 * 60 * 24 * 7, // 7 days (matches REFRESH_TOKEN_LIFETIME)
     });
 
     // Fetch user profile to determine role and redirect
@@ -95,8 +112,9 @@ export async function signIn(formData: FormData) {
     } else {
       redirectPath = "/dashboard";
     }
-  } catch (error: any) {
-    if (error.message === "Failed to fetch") {
+  } catch (error: unknown) {
+    const message = errMessage(error, "We couldn't log you in. Please check your email and password.");
+    if (message === "Failed to fetch") {
       return {
         error:
           "Connection error: We can't reach the login server right now. Please try again in a moment.",
@@ -104,29 +122,38 @@ export async function signIn(formData: FormData) {
     }
     // Handle 401/403 or specific auth errors
     if (
-      error.message.includes("401") ||
-      error.message.toLowerCase().includes("no active account")
+      message.includes("401") ||
+      message.toLowerCase().includes("no active account")
     ) {
       return {
         error:
           "We don't recognize that email or password. Please double-check your credentials.",
       };
     }
-    return {
-      error:
-        error.message ||
-        "We couldn't log you in. Please check your email and password.",
-    };
+    return { error: message };
   }
 
   if (redirectPath) {
     revalidatePath("/", "layout");
     return { redirectPath };
   }
+  return { error: "Login did not complete. Please try again." };
 }
 
 export async function signOut() {
   const cookieStore = await cookies();
+  const refreshToken = cookieStore.get("refresh_token")?.value;
+  const accessToken = cookieStore.get("access_token")?.value;
+
+  // Blacklist the refresh token server-side so it cannot be reused.
+  if (refreshToken && accessToken) {
+    try {
+      await api.post("/auth/logout/", { refresh: refreshToken }, { token: accessToken });
+    } catch {
+      // Best-effort: if the backend is unreachable we still clear cookies.
+    }
+  }
+
   cookieStore.delete("access_token");
   cookieStore.delete("refresh_token");
   redirect("/login");
@@ -153,8 +180,8 @@ export async function changePassword(formData: FormData) {
       confirm_password,
     });
     return { success: true };
-  } catch (error: any) {
-    return { error: error.message || "Failed to change password." };
+  } catch (error: unknown) {
+    return { error: errMessage(error, "Failed to change password.") };
   }
 }
 
@@ -163,8 +190,8 @@ export async function forgotPassword(email: string) {
   try {
     await api.post("/auth/forgot-password/", { email });
     return { success: true };
-  } catch (error: any) {
-    return { error: error.message || "Failed to send reset code." };
+  } catch (error: unknown) {
+    return { error: errMessage(error, "Failed to send reset code.") };
   }
 }
 
@@ -193,7 +220,7 @@ export async function resetPassword(formData: FormData) {
       new_password: newPassword,
     });
     return { success: true };
-  } catch (error: any) {
-    return { error: error.message || "Failed to reset password." };
+  } catch (error: unknown) {
+    return { error: errMessage(error, "Failed to reset password.") };
   }
 }

@@ -23,85 +23,106 @@ import ContactMessageManager from "@/components/admin/ContactMessageManager";
 import AdminSettingsPanel from "@/components/admin/AdminSettingsPanel";
 import CreateCourseForm from "@/components/admin/CreateCourseForm";
 import GenerateInviteForm from "@/components/admin/GenerateInviteForm";
+import AssignmentDataManager from "@/components/admin/AssignmentDataManager";
 import { MoreVertical } from "lucide-react";
 import { deleteInviteCode } from "@/app/actions/admin";
 
 interface AdminDashboardContentProps {
   initialTab: string;
   initialQuery: string;
-  token?: string;
 }
 
 export default function AdminDashboardContent({
   initialTab,
   initialQuery,
-  token,
 }: AdminDashboardContentProps) {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [partialError, setPartialError] = useState<string | null>(null);
   const [data, setData] = useState<any>({
     students: [],
     tutors: [],
     courses: [],
     sessions: [],
+    assignments: [],
     tutorApps: [],
     studentApps: [],
     inviteCodes: [],
     contactMessages: [],
     settings: null,
   });
-  const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
     setError(null);
-    try {
-      const [
-        allProfiles,
-        fetchedTutorApps,
-        fetchedStudentApps,
-        fetchedInvites,
-        fetchedMessages,
-        fetchedCourses,
-        fetchedSessions,
-        fetchedSettings,
-      ] = await Promise.all([
-        api.get("/profiles/", { token }).catch(() => []),
-        api.get("/tutor-applications/", { token }).catch(() => []),
-        api.get("/student-applications/", { token }).catch(() => []),
-        api.get("/invites/", { token }).catch(() => []),
-        api.get("/contact-messages/", { token }).catch(() => []),
-        api.get("/courses/", { token }).catch(() => []),
-        api.get("/sessions/", { token }).catch(() => []),
-        api.get("/settings/", { token }).catch(() => null),
-      ]);
+    setPartialError(null);
 
-      setData({
-        students: (allProfiles as any[]).filter((p) => p.role === "student"),
-        tutors: (allProfiles as any[]).filter((p) => p.role === "tutor"),
-        tutorApps: fetchedTutorApps as any[],
-        studentApps: fetchedStudentApps as any[],
-        inviteCodes: fetchedInvites as any[],
-        contactMessages: fetchedMessages as any[],
-        courses: fetchedCourses as any[],
-        sessions: fetchedSessions as any[],
-        settings: fetchedSettings as any,
+    // Track failures per fetch so the dashboard can tell the admin that
+    // data is missing, instead of silently rendering empty tables.
+    let failures = 0;
+    const safe = (p: Promise<any>): Promise<any> =>
+      p.catch(() => {
+        failures++;
+        return null;
       });
-    } catch (err: any) {
-      console.error("Dashboard Fetch Error:", err);
-      setError(err.message || "Failed to load dashboard data");
-    } finally {
+
+    const [
+      allProfiles,
+      fetchedTutorApps,
+      fetchedStudentApps,
+      fetchedInvites,
+      fetchedMessages,
+      fetchedCourses,
+      fetchedSessions,
+      fetchedSettings,
+      fetchedAssignments,
+    ] = await Promise.all([
+      // All fetches go through the same-origin /api proxy (cookie auth) —
+      // the access token never needs to be exposed to client JavaScript.
+      safe(api.get("/profiles/", { baseUrl: "/api" })),
+      safe(api.get("/tutor-applications/", { baseUrl: "/api" })),
+      safe(api.get("/student-applications/", { baseUrl: "/api" })),
+      safe(api.get("/invites/", { baseUrl: "/api" })),
+      safe(api.get("/contact-messages/", { baseUrl: "/api" })),
+      safe(api.get("/courses/", { baseUrl: "/api" })),
+      safe(api.get("/sessions/", { baseUrl: "/api" })),
+      safe(api.get("/settings/", { baseUrl: "/api" })),
+      safe(api.get("/assignments/", { baseUrl: "/api" })),
+    ]);
+
+    if (failures === 9) {
+      setError("Unable to reach the API. Check your connection and try again.");
       setLoading(false);
+      return;
     }
+    if (failures > 0) {
+      setPartialError(
+        `${failures} of 9 data sections failed to load — some lists may be incomplete. Retry to reload everything.`,
+      );
+    }
+
+    setData({
+      students: (allProfiles ?? []).filter((p: any) => p.role === "student"),
+      tutors: (allProfiles ?? []).filter((p: any) => p.role === "tutor"),
+      tutorApps: fetchedTutorApps ?? [],
+      studentApps: fetchedStudentApps ?? [],
+      inviteCodes: fetchedInvites ?? [],
+      contactMessages: fetchedMessages ?? [],
+      courses: fetchedCourses ?? [],
+      // /sessions/ is paginated ({count, next, previous, results}) — unwrap.
+      sessions: (fetchedSessions?.results ?? fetchedSessions) ?? [],
+      settings: fetchedSettings,
+      assignments: fetchedAssignments ?? [],
+    });
+    setLoading(false);
   };
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  const { tab = initialTab, q = initialQuery } = {
-    tab: initialTab,
-    q: initialQuery,
-  };
+  const tab = initialTab;
+  const q = initialQuery;
 
   // Filter data based on query
   let filteredStudents = data.students;
@@ -123,7 +144,7 @@ export default function AdminDashboardContent({
     filteredCourses = data.courses.filter(
       (c: any) =>
         c.title?.toLowerCase().includes(query) ||
-        c.subject?.toLowerCase().includes(query),
+        c.category?.toLowerCase().includes(query),
     );
   }
 
@@ -146,6 +167,7 @@ export default function AdminDashboardContent({
       count: data.contactMessages.length,
     },
     { key: "courses", label: "Courses", count: data.courses.length },
+    { key: "assignments", label: "Assignments", count: data.assignments.length },
     { key: "sessions", label: "Sessions" },
     { key: "attendance", label: "Attendance" },
     { key: "settings", label: "Settings" },
@@ -184,6 +206,22 @@ export default function AdminDashboardContent({
 
   return (
     <div className="space-y-8">
+      {/* Partial-failure banner — incomplete data is visible, never silent */}
+      {partialError && (
+        <div className="flex items-center justify-between gap-3 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 text-sm font-semibold rounded-xl">
+          <span className="flex items-center gap-2">
+            <Activity size={16} /> {partialError}
+          </span>
+          <button
+            onClick={fetchData}
+            className="p-2 hover:bg-amber-100 dark:hover:bg-amber-900 rounded-lg shrink-0"
+            title="Retry all fetches"
+          >
+            <RefreshCw size={14} />
+          </button>
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
@@ -356,6 +394,15 @@ export default function AdminDashboardContent({
               sessions={data.sessions}
             />
           </div>
+        )}
+
+        {/* ========== ASSIGNMENTS TAB ========== */}
+        {tab === "assignments" && (
+          <AssignmentDataManager
+            assignments={data.assignments}
+            students={data.students}
+            tutors={data.tutors}
+          />
         )}
 
         {/* ========== SESSIONS TAB ========== */}

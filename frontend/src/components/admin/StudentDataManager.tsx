@@ -4,7 +4,7 @@ import { useState } from "react";
 import { 
   Users, Mail, Phone, Calendar, ShieldCheck, 
   BookOpen, Search, X, MoreVertical, ExternalLink,
-  GraduationCap, Clock, CheckCircle, Activity, Plus, AlertCircle
+  GraduationCap, Clock, CheckCircle, Activity, Plus, AlertCircle, Globe
 } from "lucide-react";
 import { activateAndEnroll, toggleOnboardingStatus } from "@/app/actions/admin";
 
@@ -131,7 +131,9 @@ export default function StudentDataManager({ students, courses, tutors }: Studen
                 <DetailItem icon={<Mail size={16} />} label="Email Address" value={selectedStudent.email} />
                 <DetailItem icon={<Phone size={16} />} label="Phone Number" value={selectedStudent.phone || "Not provided"} />
                 <DetailItem icon={<Calendar size={16} />} label="Grade Level" value={selectedStudent.grade_level || "N/A"} />
+                <DetailItem icon={<BookOpen size={16} />} label="School Level" value={selectedStudent.school_level || "N/A"} />
                 <DetailItem icon={<ShieldCheck size={16} />} label="Curriculum" value={selectedStudent.curriculum || "N/A"} />
+                <DetailItem icon={<Globe size={16} />} label="Country" value={selectedStudent.country || "N/A"} />
                 <DetailItem icon={<Users size={16} />} label="Guardian" value={selectedStudent.guardian_name || "N/A"} />
                 <DetailItem icon={<Clock size={16} />} label="Joined Date" value={new Date(selectedStudent.created_at).toLocaleDateString()} />
               </div>

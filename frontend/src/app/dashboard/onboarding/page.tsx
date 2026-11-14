@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { BookOpen, Sparkles, GraduationCap, CheckCircle2, Clock } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { BookOpen, Sparkles, GraduationCap, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [role, setRole] = useState<string | null>(null);
+  const [timedOut, setTimedOut] = useState(false);
   const router = useRouter();
+  const pollCount = useRef(0);
 
   const studentSteps = [
     {
@@ -78,8 +80,18 @@ export default function OnboardingPage() {
       setStep((prev) => (prev < 3 ? prev + 1 : prev));
     }, 3000);
 
-    // Poll for onboarding completion
-    const pollOnboarding = setInterval(checkOnboarding, 5000);
+    // Poll for onboarding completion — capped so a never-activated account
+    // stops hammering the API forever (previously polled every 5s eternally).
+    const MAX_POLLS = 60; // 5 minutes at 5s intervals
+    const pollOnboarding = setInterval(() => {
+      pollCount.current += 1;
+      if (pollCount.current >= MAX_POLLS) {
+        clearInterval(pollOnboarding);
+        setTimedOut(true);
+        return;
+      }
+      checkOnboarding();
+    }, 5000);
 
     return () => {
       clearInterval(interval);
@@ -157,9 +169,21 @@ export default function OnboardingPage() {
           transition={{ delay: 1 }}
           className="p-4 bg-primary/5 rounded-2xl border border-primary/10"
         >
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Welcome to Impact Tutors! {role === 'tutor' ? 'Our administration is finalizing your account activation.' : 'An administrator is currently finalizing your personalized course path.'} This usually takes less than 5 minutes.
-          </p>
+          {timedOut ? (
+            <p className="text-[11px] text-foreground leading-relaxed flex items-start gap-2">
+              <AlertCircle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+              <span>
+                Activation is taking longer than usual. We've stopped checking
+                automatically — refresh this page in a few minutes, or{" "}
+                <a href="/contact" className="text-primary font-bold hover:underline">contact support</a>{" "}
+                if your account still isn't activated.
+              </span>
+            </p>
+          ) : (
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Welcome to Impact Tutors! {role === 'tutor' ? 'Our administration is finalizing your account activation.' : 'An administrator is currently finalizing your personalized course path.'} This usually takes less than 5 minutes.
+            </p>
+          )}
         </motion.div>
       </div>
     </div>

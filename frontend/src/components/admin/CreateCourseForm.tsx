@@ -80,6 +80,20 @@ export default function CreateCourseForm({ students, tutors }: CreateCourseFormP
             className="w-full px-4 py-3 bg-section border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm" />
         </div>
 
+        {/* Publishing + SEO */}
+        <div className="md:col-span-2 space-y-3 p-4 bg-section-alt rounded-xl border border-border">
+          <label className="flex items-center gap-3 text-sm font-bold cursor-pointer">
+            <input type="checkbox" name="isPublished" className="w-4 h-4" />
+            Publish to the public courses page
+          </label>
+          <div className="grid md:grid-cols-2 gap-3">
+            <input name="seoTitle" placeholder="Public listing title (optional)"
+              className="px-4 py-2.5 bg-card border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary" />
+            <input name="seoDescription" placeholder="Public listing description (optional)"
+              className="px-4 py-2.5 bg-card border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary" />
+          </div>
+        </div>
+
         <div className="md:col-span-2 space-y-3 pt-2">
           <h4 className="text-xs font-bold uppercase tracking-wider text-muted">Weekly Schedule (Up to 3 Sessions)</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

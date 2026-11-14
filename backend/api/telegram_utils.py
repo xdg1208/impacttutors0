@@ -10,9 +10,12 @@ def _send_telegram_message_sync(text):
     Synchronous helper to send telegram message.
     """
     from .models import GlobalSetting
-    
+
+    # Singleton row, created on first access (race-safe).
     settings_obj = GlobalSetting.objects.first()
-    db_chat_id = settings_obj.telegram_chat_id if settings_obj else None
+    if settings_obj is None:
+        settings_obj, _ = GlobalSetting.objects.get_or_create(id=1)
+    db_chat_id = settings_obj.telegram_chat_id
     
     bot_token = getattr(settings, 'TELEGRAM_BOT_TOKEN', None)
     chat_id = db_chat_id or getattr(settings, 'TELEGRAM_CHAT_ID', None)

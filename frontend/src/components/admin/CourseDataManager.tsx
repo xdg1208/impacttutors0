@@ -18,6 +18,7 @@ import {
   CheckSquare,
   Square,
   Loader2,
+  AlertCircle,
 } from "lucide-react";
 import {
   updateCourse,
@@ -43,11 +44,12 @@ export default function CourseDataManager({
   const [editingCourse, setEditingCourse] = useState<any | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState<string | null>(null); // 'bulk' or courseId
+  const [error, setError] = useState<string | null>(null);
 
   const filteredCourses = courses.filter(
     (c) =>
       c.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.tutor_name?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
@@ -72,9 +74,16 @@ export default function CourseDataManager({
     )
       return;
     setLoading(id);
+    setError(null);
     try {
-      await deleteCourse(id);
-      router.refresh();
+      const result = await deleteCourse(id);
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        router.refresh();
+      }
+    } catch (e: any) {
+      setError(e?.message || "A network error occurred while deleting.");
     } finally {
       setLoading(null);
     }
@@ -88,10 +97,17 @@ export default function CourseDataManager({
     )
       return;
     setLoading("bulk");
+    setError(null);
     try {
-      await bulkDeleteCourses(selectedIds);
-      setSelectedIds([]);
-      router.refresh();
+      const result = await bulkDeleteCourses(selectedIds);
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        setSelectedIds([]);
+        router.refresh();
+      }
+    } catch (e: any) {
+      setError(e?.message || "A network error occurred while deleting.");
     } finally {
       setLoading(null);
     }
@@ -99,6 +115,18 @@ export default function CourseDataManager({
 
   return (
     <div className="space-y-6">
+      {/* Error banner — failures are surfaced, never swallowed */}
+      {error && (
+        <div className="flex items-center justify-between gap-3 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-600 text-sm font-semibold rounded-xl">
+          <span className="flex items-center gap-2">
+            <AlertCircle size={16} /> {error}
+          </span>
+          <button onClick={() => setError(null)} className="p-1 hover:bg-red-100 dark:hover:bg-red-900 rounded-lg">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       {/* Search Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
@@ -192,7 +220,7 @@ export default function CourseDataManager({
                   </td>
                   <td className="px-5 py-4">
                     <p className="text-sm font-bold">{c.title}</p>
-                    <p className="text-[10px] text-muted">{c.subject}</p>
+                    <p className="text-[10px] text-muted">{c.category}</p>
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex flex-wrap gap-1 max-w-[200px]">
@@ -285,7 +313,13 @@ export default function CourseDataManager({
 
             <form
               action={async (formData) => {
-                await updateCourse(editingCourse.id, formData);
+                const result = await updateCourse(editingCourse.id, formData);
+                if (result?.error) {
+                  // Keep the modal open so nothing is silently lost.
+                  setError(result.error);
+                  return;
+                }
+                setError(null);
                 handleClose();
               }}
               className="flex-1 overflow-y-auto p-6 space-y-6"
@@ -364,6 +398,39 @@ export default function CourseDataManager({
                   placeholder="https://zoom.us/j/..."
                   className="w-full px-4 py-2.5 bg-section border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted/50"
                 />
+              </div>
+
+              {/* Publishing + SEO */}
+              <div className="space-y-3 p-4 bg-section-alt rounded-xl border border-border">
+                <label className="flex items-center gap-3 text-sm font-bold cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="isPublished"
+                    defaultChecked={Boolean(editingCourse.is_published)}
+                    className="w-4 h-4"
+                  />
+                  Publish to the public courses page
+                </label>
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted ml-1">Public Listing Title</label>
+                    <input
+                      name="seoTitle"
+                      defaultValue={editingCourse.seo_title || ""}
+                      placeholder="Defaults to the course title"
+                      className="w-full px-4 py-2.5 bg-card border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted ml-1">Public Listing Description</label>
+                    <input
+                      name="seoDescription"
+                      defaultValue={editingCourse.seo_description || ""}
+                      placeholder="Shown on the public courses page"
+                      className="w-full px-4 py-2.5 bg-card border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Weekly schedule - set the timetable */}

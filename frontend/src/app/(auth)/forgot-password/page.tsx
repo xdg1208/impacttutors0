@@ -53,35 +53,80 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen pt-28 pb-20 px-4 md:px-6 flex items-center justify-center section-alt relative">
-      <div className="absolute inset-0 dot-pattern -z-10" />
+    <div className="h-screen w-full flex overflow-hidden">
+      {/* Left: Full-height image panel (fixed to viewport, never scrolls) */}
+      <div className="hidden lg:flex lg:w-1/2 relative h-full shrink-0">
+        <Image
+          src="/images/hero1.png"
+          alt="Secure Impact Tutors Account"
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-primary/30 to-black/20" />
+        <div className="absolute bottom-16 left-12 right-12 text-white space-y-4 z-10">
+          <Link href="/" className="flex items-center gap-2.5 mb-8">
+            <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg ring-1 ring-white/20">
+              <Image
+                src="/images/logo.jpg"
+                alt="Impact Tutors Logo"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <span className="text-2xl font-bold tracking-tight font-heading">
+              Impact <span className="text-primary">Tutors</span>
+            </span>
+          </Link>
+          <h2 className="text-4xl font-bold leading-tight font-heading">
+            Account Recovery
+          </h2>
+          <p className="text-white/70 leading-relaxed text-lg max-w-md">
+            Protecting your learning journey. Follow the quick steps to safely recover your account access.
+          </p>
+        </div>
+      </div>
 
-      <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-0 items-stretch animate-fade-in-up">
-        {/* Left: Image Panel */}
-        <div className="hidden lg:block relative rounded-l-2xl overflow-hidden">
-          <Image
-            src="/images/hero2.png"
-            alt="Secure Access"
-            fill
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/40 to-transparent" />
-          <div className="absolute bottom-10 left-10 right-10 text-white space-y-3">
-            <h2 className="text-3xl font-bold" style={{ fontFamily: "'Lora', serif" }}>Security First</h2>
-            <p className="text-white/80 leading-relaxed">Protecting your account is our top priority. Resetting your password takes just a minute.</p>
-          </div>
+      {/* Right: Auth form (scrolls independently) */}
+      <div className="flex-1 h-full overflow-y-auto flex flex-col justify-between px-6 py-8 sm:px-12 lg:px-16 xl:px-24 bg-background relative">
+        <div className="absolute inset-0 dot-pattern opacity-30 -z-10" />
+
+        {/* Top bar with back to website & mobile logo */}
+        <div className="w-full flex items-center justify-between mb-4 shrink-0">
+          <Link href="/" className="flex items-center gap-2.5 lg:hidden">
+            <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow ring-1 ring-border">
+              <Image src="/images/logo.jpg" alt="Impact Tutors Logo" fill className="object-cover" />
+            </div>
+            <span className="text-xl font-bold tracking-tight font-heading">
+              Impact <span className="text-primary">Tutors</span>
+            </span>
+          </Link>
+          <div className="hidden lg:block" />
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-muted hover:text-foreground transition-all duration-200 px-3.5 py-1.5 rounded-full border border-border/70 hover:border-border hover:bg-card shadow-xs group"
+          >
+            <ArrowLeft size={13} className="group-hover:-translate-x-0.5 transition-transform duration-200" />
+            Back to website
+          </Link>
         </div>
 
-        {/* Right: Forgot Password / Reset Logic */}
-        <div className="premium-card lg:rounded-r-2xl p-8 md:p-10 flex flex-col justify-center bg-card border border-border">
+        <div className="w-full max-w-md mx-auto my-auto py-6 animate-fade-in-up">
           {step === "email" && (
             <>
-              <div className="mb-8">
-                <Link href="/login" className="inline-flex items-center gap-2 text-xs font-bold text-muted hover:text-primary transition-colors mb-4">
+              <div className="space-y-2 mb-8">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-2 text-xs font-bold text-muted hover:text-primary transition-colors mb-2"
+                >
                   <ArrowLeft size={14} /> Back to Sign In
                 </Link>
-                <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Lora', serif" }}>Forgot Password?</h1>
-                <p className="text-muted text-sm mt-1">Enter your registered email address to receive a 6-digit verification code.</p>
+                <h1 className="text-3xl font-bold tracking-tight font-heading">
+                  Forgot Password?
+                </h1>
+                <p className="text-muted text-sm">
+                  Enter your registered email address to receive a 6-digit verification code.
+                </p>
               </div>
 
               <form onSubmit={handleSendOTP} className="space-y-5">
@@ -92,9 +137,14 @@ export default function ForgotPasswordPage() {
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Email Address</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">
+                    Email Address
+                  </label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
+                    <Mail
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+                      size={16}
+                    />
                     <input
                       name="email"
                       type="email"
@@ -119,15 +169,19 @@ export default function ForgotPasswordPage() {
 
           {step === "reset" && (
             <>
-              <div className="mb-8">
-                <button 
+              <div className="space-y-2 mb-8">
+                <button
                   onClick={() => setStep("email")}
-                  className="inline-flex items-center gap-2 text-xs font-bold text-muted hover:text-primary transition-colors mb-4"
+                  className="inline-flex items-center gap-2 text-xs font-bold text-muted hover:text-primary transition-colors mb-2"
                 >
                   <ArrowLeft size={14} /> Use different email
                 </button>
-                <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Lora', serif" }}>Verify OTP & Reset</h1>
-                <p className="text-muted text-sm mt-1">We sent a 6-digit code to <strong className="text-foreground">{email}</strong>. Enter it along with your new password below.</p>
+                <h1 className="text-3xl font-bold tracking-tight font-heading">
+                  Verify & Reset
+                </h1>
+                <p className="text-muted text-sm">
+                  We sent a 6-digit code to <strong className="text-foreground">{email}</strong>. Enter it along with your new password below.
+                </p>
               </div>
 
               <form onSubmit={handleResetPassword} className="space-y-5">
@@ -140,9 +194,14 @@ export default function ForgotPasswordPage() {
                 <div className="space-y-4">
                   {/* OTP Input */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Verification Code (OTP)</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">
+                      Verification Code (OTP)
+                    </label>
                     <div className="relative">
-                      <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
+                      <KeyRound
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+                        size={16}
+                      />
                       <input
                         name="otp"
                         type="text"
@@ -156,9 +215,14 @@ export default function ForgotPasswordPage() {
 
                   {/* New Password */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">New Password</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">
+                      New Password
+                    </label>
                     <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
+                      <Lock
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+                        size={16}
+                      />
                       <input
                         name="newPassword"
                         type={showPassword ? "text" : "password"}
@@ -178,9 +242,14 @@ export default function ForgotPasswordPage() {
 
                   {/* Confirm Password */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Confirm New Password</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">
+                      Confirm New Password
+                    </label>
                     <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
+                      <Lock
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+                        size={16}
+                      />
                       <input
                         name="confirmPassword"
                         type={showPassword ? "text" : "password"}
@@ -210,17 +279,45 @@ export default function ForgotPasswordPage() {
                 <CheckCircle2 size={36} />
               </div>
               <div className="space-y-2">
-                <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Lora', serif" }}>Password Reset Complete</h1>
-                <p className="text-muted text-sm max-w-sm mx-auto">Your password has been successfully updated. You can now sign in with your new credentials.</p>
+                <h1 className="text-3xl font-bold tracking-tight font-heading">
+                  Password Reset Complete
+                </h1>
+                <p className="text-muted text-sm max-w-sm mx-auto">
+                  Your password has been successfully updated. You can now sign in with your new credentials.
+                </p>
               </div>
-              <Link 
-                href="/login" 
+              <Link
+                href="/login"
                 className="inline-block px-8 py-3.5 bg-primary text-white font-bold rounded-xl hover:shadow-lg hover:shadow-primary/20 transition-all duration-300"
               >
                 Sign In Now
               </Link>
             </div>
           )}
+
+          <div className="mt-8 pt-6 border-t border-border text-center">
+            <p className="text-sm text-muted">
+              Remember your password?{" "}
+              <Link
+                href="/login"
+                className="text-primary font-bold hover:underline"
+              >
+                Sign In
+              </Link>
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom credit */}
+        <div className="pt-6 pb-2 flex justify-center">
+          <a
+            href="https://studio.acagenie.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] text-muted/40 hover:text-primary/60 transition-colors duration-300 flex items-center gap-1"
+          >
+            Developed by <span className="font-semibold">AcaGenie Studio</span>
+          </a>
         </div>
       </div>
     </div>

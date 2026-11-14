@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import { api } from "@/lib/api"
 import { serverApi } from "@/lib/server-api";
 import Link from "next/link";
 import { 
@@ -45,7 +44,8 @@ export default async function StudentDashboard() {
       client.get("/settings/").catch(() => null)
     ]);
     courses = fetchedCourses as any[];
-    sessions = fetchedSessions as any[];
+    // /sessions/ is paginated ({count, next, previous, results}) — unwrap.
+    sessions = ((fetchedSessions as any)?.results ?? fetchedSessions) as any[];
     if ((fetchedSettings as any)?.student_whatsapp_group_link) {
       whatsappLink = (fetchedSettings as any).student_whatsapp_group_link;
     }
@@ -175,7 +175,7 @@ export default async function StudentDashboard() {
                     <div className="flex items-start justify-between">
                       <div>
                         <h4 className="font-bold text-sm">{course.title}</h4>
-                        <p className="text-[11px] text-muted mt-0.5">{course.subject}</p>
+                        <p className="text-[11px] text-muted mt-0.5">{course.category}</p>
                       </div>
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
                         course.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
@@ -220,6 +220,14 @@ export default async function StudentDashboard() {
               <div className="flex justify-between items-center text-sm">
                 <span className="text-muted">Curriculum</span>
                 <span className="font-bold">{profile?.curriculum || "N/A"}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted">School Level</span>
+                <span className="font-bold">{profile?.school_level || "N/A"}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted">Country</span>
+                <span className="font-bold">{profile?.country || "N/A"}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-muted">Age</span>

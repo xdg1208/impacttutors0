@@ -23,23 +23,23 @@ Do these in parallel with the phases — they concern **external services**:
 
 ---
 
-## Phase 1 — Secrets & repo hygiene ✔ (audit #1, #36, #37-partial, #42-new)
+## Phase 1 — Secrets & repo hygiene ✔ DONE (audit #1, #36, #37-partial, #42-new)
 
 | # | Step | Audit | Files |
 |---|------|-------|-------|
-| P1.1 | ☐ Remove committed Gmail credentials: delete `test_smtp.py` | #1 | `backend/test_smtp.py` |
-| P1.2 | ☐ Delete stray one-off codemod scripts from the frontend | #36 | `frontend/dedupe.py`, `frontend/fix_api.py` |
-| P1.3 | ☐ Untrack the production database; keep local copy | #1 | `backend/db.sqlite3` |
-| P1.4 | ☐ Fix `.gitignore`: track `.env.example`, ignore real env files, ignore `*.sqlite3`, staticfiles | #42 | `.gitignore` |
-| P1.5 | ☐ Rewrite `backend/.env.example` — placeholders only, `DEBUG=False`, no real tokens; make it tracked | #1, #6 | `backend/.env.example` |
-| P1.6 | ☐ Fix `frontend/.env.example` (local-first default) and make it tracked | #42 | `frontend/.env.example` |
-| P1.7 | ☐ Harden `SECRET_KEY`: production without it refuses to boot; dev-only fallback under `DEBUG=True` | #1 | `core/settings.py` |
-| P1.8 | ☐ Rename package `temp_app` → `impact-tutors-frontend` | #37 | `frontend/package.json` |
-| P1.9 | ☐ Pin `requirements.txt` to exact installed versions | #37 | `backend/requirements.txt` |
+| P1.1 | ✔ Remove committed Gmail credentials: delete `test_smtp.py` | #1 | `backend/test_smtp.py` |
+| P1.2 | ✔ Delete stray one-off codemod scripts from the frontend | #36 | `frontend/dedupe.py`, `frontend/fix_api.py` |
+| P1.3 | ✔ Untrack the production database; keep local copy | #1 | `backend/db.sqlite3` |
+| P1.4 | ✔ Fix `.gitignore`: track `.env.example`, ignore real env files, ignore `*.sqlite3`, staticfiles | #42 | `.gitignore` |
+| P1.5 | ✔ Rewrite `backend/.env.example` — placeholders only, `DEBUG=False`, no real tokens; make it tracked | #1, #6 | `backend/.env.example` |
+| P1.6 | ✔ Fix `frontend/.env.example` (local-first default) and make it tracked | #42 | `frontend/.env.example` |
+| P1.7 | ✔ Harden `SECRET_KEY`: production without it refuses to boot; dev-only fallback under `DEBUG=True` | #1 | `core/settings.py` |
+| P1.8 | ✔ Rename package `temp_app` → `impact-tutors-frontend` | #37 | `frontend/package.json` |
+| P1.9 | ✔ Pin `requirements.txt` to exact installed versions | #37 | `backend/requirements.txt` |
 
 ---
 
-## Phase 2 — Backend access control & auth hardening (audit #2, #4, #5, #6, #7, #9, #11, #12, #18, #23, #25)
+## Phase 2 — Backend access control & auth hardening ✔ DONE (audit #2, #4, #5, #6, #7, #9, #11, #12, #18, #23, #25)
 
 | # | Step | Audit | Files |
 |---|------|-------|-------|
@@ -64,7 +64,7 @@ Do these in parallel with the phases — they concern **external services**:
 
 ---
 
-## Phase 3 — Frontend critical breakage (audit #3, #29, #30)
+## Phase 3 — Frontend critical breakage ✔ DONE (audit #3, #29, #30)
 
 | # | Step | Audit | Files |
 |---|------|-------|-------|
@@ -76,7 +76,7 @@ Do these in parallel with the phases — they concern **external services**:
 
 ---
 
-## Phase 4 — Token lifetime & session reliability (audit #8, #10, #41, #4-copy)
+## Phase 4 — Token lifetime & session reliability ✔ DONE (audit #8, #10, #41, #4-copy)
 
 | # | Step | Audit | Files |
 |---|------|-------|-------|
@@ -88,7 +88,7 @@ Do these in parallel with the phases — they concern **external services**:
 
 ---
 
-## Phase 5 — Backend performance & correctness (audit #13–#17, #19–#22, #24)
+## Phase 5 — Backend performance & correctness ✔ DONE (audit #13–#17, #19–#22, #24)
 
 | # | Step | Audit | Files |
 |---|------|-------|-------|
@@ -105,7 +105,7 @@ Do these in parallel with the phases — they concern **external services**:
 
 ---
 
-## Phase 6 — Frontend correctness & UX (audit #26–#28, #31–#34)
+## Phase 6 — Frontend correctness & UX ✔ DONE (audit #26–#28, #31–#34)
 
 | # | Step | Audit | Files |
 |---|------|-------|-------|
@@ -119,13 +119,13 @@ Do these in parallel with the phases — they concern **external services**:
 
 ---
 
-## Phase 7 — Dead code, docs, tests, polish (audit #35, #37, #38, #39, #40)
+## Phase 7 — Dead code, docs, tests, polish ✔ DONE (audit #35, #37, #38, #39, #40)
 
 | # | Step | Audit | Files |
 |---|------|-------|-------|
 | P7.1 | Delete unused components: `SessionDataManager.tsx`, `CreateSessionForm.tsx` (+ their now-dead server actions stay until P7.3 decides) | #35 | components |
 | P7.2 | `JsonLd`: escape `<`/U+2028/U+2029 in serialized JSON (fix latent XSS) and actually use it — Organization schema on home page | #35 | `components/seo/JsonLd.tsx`, `app/page.tsx` |
-| P7.3 | Remove dead features end-to-end (pending user decision): `StudentTutorAssignment` model/API/migration, standalone `/schedules/` viewset, unused `Course.is_published/seo_*` + `Profile.school_level/country/tutor_bio` fields | #35 | backend |
+| P7.3 | ~~Remove dead features~~ → **BUILD UI for kept API features**: admin "Assignments" tab (StudentTutorAssignment manager), course `is_published`/`seo_*` fields in admin forms + public published-courses endpoint + public "Live Programs" section, profile `school_level`/`country`/`tutor_bio` in signup + dashboards/admin | #35 (revised) | backend + frontend |
 | P7.4 | README truth pass: real deployment steps, create working `render.yaml`, remove duplicated line, remove "sqlite in repo" instructions | #37 | `README.md`, `render.yaml` |
 | P7.5 | Code-quality sweep: unused imports, `console.log`s, pointless destructure, `setGeneratedCode` ordering, fake search/bell UI, "Get Dashboard" label, `user={id}` pattern, hardcoded WhatsApp default link, "Experience: Expert" stat, `DashboardNav` default export, `Session.__str__` guard, phone max_length 20→50 (migration) | #39 | many |
 | P7.6 | Role settings pages get a real profile card (view/edit full name + phone via `/profiles/me/`) | #40 | settings pages, new component |
@@ -137,9 +137,15 @@ Do these in parallel with the phases — they concern **external services**:
 
 ---
 
-## Decisions logged (defaults unless user overrides)
+## Decisions logged (user-confirmed)
 
-1. **Slugs**: canonical set = `k12-adult`, `nigerian-languages`, `coding-for-kids`, `music`, `exam-prep`; all old slugs resolve via alias map (SEO-safe).
+1. **Git workflow**: NO commits — all changes stay uncommitted in the working tree for user review.
+2. **Dead features (P7.3, revised)**: nothing is deleted from the API. Instead, missing UI gets built:
+   - `StudentTutorAssignment` → new admin "Assignments" tab + manager UI on the existing `/assignments/` API.
+   - `Course.is_published / seo_title / seo_description` → fields in admin course forms + public read-only `published` endpoint + "Live Programs" section on the public courses page.
+   - `Profile.school_level / country / tutor_bio` → signup form fields + display in dashboards and admin profile modals.
+3. **Tests (P7.7-7.8)**: Django backend suite + vitest for frontend utils.
+4. **Slugs**: canonical set = `k12-adult`, `nigerian-languages`, `coding-for-kids`, `music`, `exam-prep`; all old slugs resolve via alias map (SEO-safe).
 2. **Sessions stay per-student** (attendance is per-student) — the "course-wide" comments were the bug, not the code.
 3. **Password change keeps the current access token** (≤60 min residual, documented in UI); refresh tokens are revoked immediately.
 4. **Registration email-exists message stays** (standard UX tradeoff); the OTP timing side channel is removed via async send.

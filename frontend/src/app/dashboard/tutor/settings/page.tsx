@@ -1,20 +1,24 @@
 import ChangePasswordForm from "@/components/auth/ChangePasswordForm";
+import ProfileInfoCard from "@/components/dashboard/ProfileInfoCard";
+import { serverApi } from "@/lib/server-api";
 import { Shield } from "lucide-react";
 
-export default function TutorSettingsPage() {
+export default async function TutorSettingsPage() {
+  const client = await serverApi.auth();
+  const profile: any = await client.get("/profiles/me/").catch(() => null);
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
       <div className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "'Lora', serif" }}>Account Settings</h1>
-        <p className="text-muted text-sm">Manage your tutor account security and preferences.</p>
+        <p className="text-muted text-sm">Manage your tutor profile and account security.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          <ChangePasswordForm />
-        </div>
-        
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {profile && <ProfileInfoCard profile={profile} />}
+
         <div className="space-y-6">
+          {profile && <ChangePasswordForm />}
           <div className="premium-card rounded-2xl p-6 bg-primary/5 border-primary/10">
             <div className="flex items-center gap-3 text-primary mb-4">
               <Shield size={20} />

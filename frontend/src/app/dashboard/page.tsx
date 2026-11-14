@@ -1,4 +1,3 @@
-import { api } from "@/lib/api"
 import { serverApi } from "@/lib/server-api";
 import { redirect } from "next/navigation";
 

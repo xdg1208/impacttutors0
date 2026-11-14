@@ -51,11 +51,11 @@ export default function Footer() {
         <div>
           <h4 className="text-base font-bold mb-6" style={{ fontFamily: "'Lora', serif" }}>Subjects</h4>
           <ul className="space-y-3">
-            <FooterLink href="/courses/music-languages">Global Languages</FooterLink>
+            <FooterLink href="/courses/nigerian-languages">Nigerian Languages</FooterLink>
             <FooterLink href="/courses/coding-for-kids">Coding for Kids</FooterLink>
-            <FooterLink href="/courses/k12-math">K-12 Mathematics</FooterLink>
-            <FooterLink href="/courses/exam-prep">Exam Preparation</FooterLink>
-            <FooterLink href="/courses/foreign-curriculum">Foreign Curriculum</FooterLink>
+            <FooterLink href="/courses/k12-adult">K-12 & Adult Classes</FooterLink>
+            <FooterLink href="/courses/music">Music Classes</FooterLink>
+            <FooterLink href="/courses/exam-prep">Global Exam Prep</FooterLink>
           </ul>
         </div>
 
@@ -107,9 +107,22 @@ export default function Footer() {
         <p className="text-sm text-slate-500 font-medium">
           &copy; {new Date().getFullYear()} Impact Tutors. All rights reserved.
         </p>
-        <div className="flex gap-8 text-sm text-slate-500 font-medium">
-          <Link href="/privacy" className="hover:text-white transition-colors duration-300">Privacy Policy</Link>
-          <Link href="/terms" className="hover:text-white transition-colors duration-300">Terms of Service</Link>
+        <div className="flex items-center gap-6">
+          <div className="flex gap-8 text-sm text-slate-500 font-medium">
+            <Link href="/privacy" className="hover:text-white transition-colors duration-300">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors duration-300">Terms of Service</Link>
+          </div>
+          <span className="hidden md:inline text-slate-700">|</span>
+          <a
+            href="https://studio.acagenie.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-slate-600 hover:text-primary transition-colors duration-300 flex items-center gap-1.5 group"
+          >
+            <span className="opacity-70 group-hover:opacity-100 transition-opacity">Developed by</span>
+            <span className="font-bold text-slate-400 group-hover:text-primary transition-colors">AcaGenie Studio</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all duration-300"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+          </a>
         </div>
       </div>
     </footer>

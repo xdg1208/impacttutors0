@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Mail, Lock, User, GraduationCap, Users, Eye, EyeOff } from "lucide-react";
+import { ChevronRight, Mail, Lock, User, GraduationCap, Users, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { signUp } from "@/app/actions/auth";
 
 export default function SignupPage() {
@@ -27,35 +27,82 @@ export default function SignupPage() {
     if (result?.error) {
       setError(result.error);
       setLoading(false);
-    } else {
-      router.push("/login?message=Check your email to confirm your account");
+      return;
     }
+
+    // Registration auto-logs the user in — go straight to their dashboard.
+    if (result?.redirectPath) {
+      window.location.href = result.redirectPath;
+      return;
+    }
+
+    // Auto-login didn't complete — ask them to sign in (no email
+    // confirmation flow exists, so don't pretend one does).
+    router.push("/login?message=Account created successfully. Please sign in.");
   }
 
   return (
-    <div className="min-h-screen pt-28 pb-20 px-4 md:px-6 flex items-center justify-center section-alt relative">
-      <div className="absolute inset-0 dot-pattern -z-10" />
+    <div className="h-screen w-full flex overflow-hidden">
+      {/* Left: Full-height image panel (fixed to viewport, never scrolls) */}
+      <div className="hidden lg:flex lg:w-[45%] relative h-full shrink-0">
+        <Image
+          src="/images/hero0.png"
+          alt="Student joining Impact Tutors"
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-primary/30 to-black/20" />
+        <div className="absolute bottom-16 left-12 right-12 text-white space-y-4 z-10">
+          <Link href="/" className="flex items-center gap-2.5 mb-8">
+            <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg ring-1 ring-white/20">
+              <Image
+                src="/images/logo.jpg"
+                alt="Impact Tutors Logo"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <span className="text-2xl font-bold tracking-tight font-heading">
+              Impact <span className="text-primary">Tutors</span>
+            </span>
+          </Link>
+          <h2 className="text-4xl font-bold leading-tight font-heading">
+            Join Impact Tutors
+          </h2>
+          <p className="text-white/70 leading-relaxed text-lg max-w-md">
+            Create your account and start your personalized learning journey today.
+          </p>
+        </div>
+      </div>
 
-      <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-0 items-stretch animate-fade-in-up">
-        {/* Left: Image */}
-        <div className="hidden lg:block relative rounded-l-2xl overflow-hidden">
-          <Image
-            src="/images/hero0.png"
-            alt="Student joining Impact Tutors"
-            fill
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/40 to-transparent" />
-          <div className="absolute bottom-10 left-10 right-10 text-white space-y-3">
-            <h2 className="text-3xl font-bold" style={{ fontFamily: "'Lora', serif" }}>Join Impact Tutors</h2>
-            <p className="text-white/80 leading-relaxed">Create your account and start your personalized learning journey today.</p>
-          </div>
+      {/* Right: Auth form (scrolls independently) */}
+      <div className="flex-1 h-full overflow-y-auto flex flex-col justify-between px-6 py-8 sm:px-12 lg:px-12 xl:px-20 bg-background relative">
+        <div className="absolute inset-0 dot-pattern opacity-30 -z-10" />
+
+        {/* Top bar with back to website & mobile logo */}
+        <div className="w-full flex items-center justify-between mb-4 shrink-0">
+          <Link href="/" className="flex items-center gap-2.5 lg:hidden">
+            <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow ring-1 ring-border">
+              <Image src="/images/logo.jpg" alt="Impact Tutors Logo" fill className="object-cover" />
+            </div>
+            <span className="text-xl font-bold tracking-tight font-heading">
+              Impact <span className="text-primary">Tutors</span>
+            </span>
+          </Link>
+          <div className="hidden lg:block" />
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-muted hover:text-foreground transition-all duration-200 px-3.5 py-1.5 rounded-full border border-border/70 hover:border-border hover:bg-card shadow-xs group"
+          >
+            <ArrowLeft size={13} className="group-hover:-translate-x-0.5 transition-transform duration-200" />
+            Back to website
+          </Link>
         </div>
 
-        {/* Right: Form */}
-        <div className="premium-card lg:rounded-r-2xl p-8 md:p-10 flex flex-col justify-center">
+        <div className="w-full max-w-lg mx-auto my-auto py-6 animate-fade-in-up">
           <div className="space-y-2 mb-6">
-            <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Lora', serif" }}>Create Account</h1>
+            <h1 className="text-3xl font-bold tracking-tight font-heading">Create Account</h1>
             <p className="text-muted text-sm">Join the Impact Tutors community</p>
           </div>
 
@@ -103,7 +150,7 @@ export default function SignupPage() {
                     name="fullName"
                     type="text"
                     required
-                    placeholder="John Doe"
+                    placeholder="John Benny"
                     className="w-full pl-11 pr-4 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm"
                   />
                 </div>
@@ -181,6 +228,15 @@ export default function SignupPage() {
                     />
                   </div>
                   <div className="col-span-2 space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">School Level</label>
+                    <input
+                      name="schoolLevel"
+                      type="text"
+                      placeholder="e.g. Secondary school, Year 3"
+                      className="w-full px-4 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm"
+                    />
+                  </div>
+                  <div className="col-span-2 space-y-1.5">
                     <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Curriculum</label>
                     <select
                       name="curriculum"
@@ -197,6 +253,35 @@ export default function SignupPage() {
                   </div>
                 </div>
               )}
+
+              {role === "tutor" && (
+                <div className="space-y-1.5 animate-fade-in">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Short Bio (for parents to see)</label>
+                  <textarea
+                    name="tutorBio"
+                    rows={3}
+                    placeholder="e.g. Certified Math teacher with 8 years of experience preparing students for WAEC/IGCSE."
+                    className="w-full px-4 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm resize-none"
+                  />
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted ml-1">Country</label>
+                <select
+                  name="country"
+                  className="w-full px-4 py-3.5 bg-section-alt border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all duration-300 text-sm appearance-none"
+                >
+                  <option value="Nigeria">Nigeria</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="United States">United States</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Australia">Australia</option>
+                  <option value="Germany">Germany</option>
+                  <option value="Malaysia">Malaysia</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
 
               {/* Registration Code Field (Required for all roles) */}
               <div className="animate-fade-in space-y-1.5 pt-2">
@@ -217,7 +302,6 @@ export default function SignupPage() {
                     : "Only approved tutors with a valid recruitment code can register."}
                 </p>
               </div>
-
             </div>
 
             <button
@@ -238,6 +322,18 @@ export default function SignupPage() {
               </Link>
             </p>
           </div>
+        </div>
+
+        {/* Bottom credit */}
+        <div className="pt-6 pb-2 flex justify-center">
+          <a
+            href="https://studio.acagenie.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] text-muted/40 hover:text-primary/60 transition-colors duration-300 flex items-center gap-1"
+          >
+            Developed by <span className="font-semibold">AcaGenie Studio</span>
+          </a>
         </div>
       </div>
     </div>

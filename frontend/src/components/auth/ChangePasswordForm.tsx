@@ -138,7 +138,7 @@ export default function ChangePasswordForm() {
 
       <div className="p-4 bg-section-alt/50 rounded-xl border border-border/50">
         <p className="text-[9px] leading-relaxed text-muted uppercase font-bold tracking-tighter">
-          Security Note: Changing your password will not log you out of your current session. If you suspect account compromise, please contact support immediately.
+          Security Note: Changing your password immediately revokes active sessions on other devices. Your current page may stay usable for up to one hour until its access token renews. If you suspect account compromise, please contact support immediately.
         </p>
       </div>
     </div>

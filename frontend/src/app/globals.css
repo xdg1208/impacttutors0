@@ -45,8 +45,8 @@
   --color-card: var(--card);
   --color-card-hover: var(--card-hover);
   --color-section-alt: var(--section-alt);
-  --font-heading: 'Lora', Georgia, serif;
-  --font-body: 'Nunito', system-ui, sans-serif;
+  --font-heading: var(--font-lora), Georgia, serif;
+  --font-body: var(--font-nunito), system-ui, sans-serif;
 }
 
 /* ─── Base ─── */
@@ -58,14 +58,14 @@ html {
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: 'Nunito', system-ui, sans-serif;
+  font-family: var(--font-nunito), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   @apply selection:bg-primary/20;
 }
 
 h1, h2, h3 {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--font-lora), Georgia, serif;
 }
 
 /* ─── Glass Utilities ─── */

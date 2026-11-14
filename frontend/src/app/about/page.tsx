@@ -2,12 +2,11 @@ import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { cookies } from "next/headers";
-import { api } from "@/lib/api";
 
 export default async function AboutPage() {
   const cookieStore = await cookies();
   const hasToken = cookieStore.get("access_token")?.value;
-  const user = hasToken ? { id: "authenticated" } : null;
+  const authenticated = Boolean(hasToken);
   return (
     <div className="pt-28 pb-20 px-4 md:px-6 ">
       <div className="container mx-auto max-w-[95%]">
@@ -22,10 +21,10 @@ export default async function AboutPage() {
               Founded with a mission to bridge the gap in personalized education, Impact Tutors connects learners worldwide with expert educators who inspire excellence.
             </p>
             <Link
-              href={user ? "/dashboard" : "/student/apply"}
+              href={authenticated ? "/dashboard" : "/student/apply"}
               className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-xl font-bold transition-all duration-300 hover:shadow-xl hover:shadow-primary/25"
             >
-              {user ? "Go to Dashboard" : "Join Us →"}
+              {authenticated ? "Go to Dashboard" : "Join Us →"}
             </Link>
           </div>
 

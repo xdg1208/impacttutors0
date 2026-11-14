@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import { api } from "@/lib/api"
 import { serverApi } from "@/lib/server-api";
 import Link from "next/link";
 import { 
@@ -36,7 +35,7 @@ export default async function TutorDashboard() {
   // Fetch data in parallel
   let courses: any[] = [];
   let sessions: any[] = [];
-  let whatsappLink = "https://chat.whatsapp.com/YOUR_DEFAULT_LINK";
+  let whatsappLink = "";
   
   try {
     const [fetchedCourses, fetchedSessions, fetchedSettings] = await Promise.all([
@@ -45,7 +44,8 @@ export default async function TutorDashboard() {
       client.get("/settings/").catch(() => null)
     ]);
     courses = fetchedCourses as any[];
-    sessions = fetchedSessions as any[];
+    // /sessions/ is paginated ({count, next, previous, results}) — unwrap.
+    sessions = ((fetchedSessions as any)?.results ?? fetchedSessions) as any[];
     const settings = fetchedSettings as any;
     if (settings?.whatsapp_group_link) {
       whatsappLink = settings.whatsapp_group_link;
@@ -132,9 +132,9 @@ export default async function TutorDashboard() {
                         <CalendarIcon size={24} />
                       </div>
                       <div>
-                        <h4 className="font-bold">{session.title}</h4>
+                        <h4 className="font-bold">{session.course_name}</h4>
                         <p className="text-sm text-muted">
-                          {new Date(session.start_time).toLocaleDateString("en-NG", { weekday: "short", month: "short", day: "numeric" })}, {new Date(session.start_time).toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit" })} • {session.duration}min
+                          {new Date(session.start_time).toLocaleDateString("en-NG", { weekday: "short", month: "short", day: "numeric" })}, {new Date(session.start_time).toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit" })} • {session.duration_minutes}min
                         </p>
                       </div>
                     </div>
@@ -192,12 +192,18 @@ export default async function TutorDashboard() {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
-                                {(course.student_name || "?").charAt(0)}
+                                {(course.student_names?.[0] || "?").charAt(0)}
                               </div>
-                              <span className="text-sm font-bold">{course.student_name || "Unassigned"}</span>
+                              <span className="text-sm font-bold">
+                                {course.student_names?.length
+                                  ? course.student_names.length > 1
+                                    ? `${course.student_names[0]} +${course.student_names.length - 1} more`
+                                    : course.student_names[0]
+                                  : "Unassigned"}
+                              </span>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-sm">{course.subject}</td>
+                          <td className="px-6 py-4 text-sm">{course.category}</td>
                           <td className="px-6 py-4">
                             <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider">
                               {course.status}
@@ -236,24 +242,36 @@ export default async function TutorDashboard() {
                 <span className="font-bold text-xs truncate max-w-[160px]">{profile?.email || "N/A"}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
+                <span className="text-muted">Country</span>
+                <span className="font-bold">{profile?.country || "N/A"}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
                 <span className="text-muted">Students</span>
                 <span className="font-bold">{courseCount}</span>
               </div>
             </div>
+            {profile?.tutor_bio && (
+              <div className="pt-3 border-t border-border">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-1">Bio</p>
+                <p className="text-[11px] text-muted leading-relaxed">{profile.tutor_bio}</p>
+              </div>
+            )}
           </div>
 
-          <div className="premium-card rounded-2xl p-6 border border-border bg-card space-y-3">
-            <h3 className="font-bold text-sm">WhatsApp Community</h3>
-            <p className="text-[11px] text-muted leading-relaxed">Join our tutor community for updates, training resources, and direct admin communication.</p>
-            <a
-              href={whatsappLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all text-center block"
-            >
-              Join WhatsApp Group
-            </a>
-          </div>
+          {whatsappLink && (
+            <div className="premium-card rounded-2xl p-6 border border-border bg-card space-y-3">
+              <h3 className="font-bold text-sm">WhatsApp Community</h3>
+              <p className="text-[11px] text-muted leading-relaxed">Join our tutor community for updates, training resources, and direct admin communication.</p>
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all text-center block"
+              >
+                Join WhatsApp Group
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </div>

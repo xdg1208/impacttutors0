@@ -1,8 +1,8 @@
 "use server";
 
-import { api } from "@/lib/api"
 import { serverApi } from "@/lib/server-api";
 import { revalidatePath } from "next/cache";
+import { uniqueCourseSlug } from "@/lib/slugify";
 
 export async function approveApplication(applicationId: string, type: 'student' | 'tutor') {
   const client = await serverApi.auth();
@@ -88,16 +88,20 @@ export async function createCourse(formData: FormData) {
 
   const client = await serverApi.auth();
   try {
+    // `category` is the real model field — the API has no `subject` field,
+    // so sending one is silently dropped.
     await client.post("/courses/", {
       title,
-      subject,
+      category: subject,
       students: studentIds,
       tutor: tutorId || null,
       meet_link: meetLink || null,
       status: "active",
-      category: subject,
-      description: title,
-      slug: title.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Date.now(),
+      is_published: formData.get("isPublished") === "on",
+      seo_title: (formData.get("seoTitle") as string) || null,
+      seo_description: (formData.get("seoDescription") as string) || null,
+      description: (formData.get("seoDescription") as string) || title,
+      slug: uniqueCourseSlug(title),
       schedules: schedules
     });
 
@@ -130,12 +134,17 @@ export async function updateCourse(courseId: string, formData: FormData) {
 
   const client = await serverApi.auth();
   try {
+    // Send `category` (the real field) — previously only the nonexistent
+    // `subject` key was sent, so subject edits silently never saved.
     await client.patch(`/courses/${courseId}/`, {
       title,
-      subject,
+      category: subject,
       students: studentIds,
       tutor: tutorId || null,
       meet_link: meetLink || null,
+      is_published: formData.get("isPublished") === "on",
+      seo_title: (formData.get("seoTitle") as string) || null,
+      seo_description: (formData.get("seoDescription") as string) || null,
       schedules: schedules
     });
 
@@ -162,55 +171,6 @@ export async function bulkDeleteCourses(ids: string[]) {
   const client = await serverApi.auth();
   try {
     await client.post("/courses/bulk-delete/", { ids });
-    revalidatePath("/dashboard/admin");
-    return { success: true };
-  } catch (error: any) {
-    return { error: error.message };
-  }
-}
-
-export async function createSession(formData: FormData) {
-  const courseId = formData.get("courseId") as string;
-  const title = formData.get("title") as string;
-  const startTime = formData.get("startTime") as string;
-  const duration = parseInt(formData.get("duration") as string) || 60;
-  const meetLink = formData.get("meetLink") as string;
-
-  if (!courseId || !title || !startTime) return { error: "Course, title, and start time are required." };
-
-  const client = await serverApi.auth();
-  try {
-    await client.post("/sessions/", {
-      course: courseId,
-      title,
-      start_time: startTime,
-      duration_minutes: duration,
-      meet_link: meetLink || null,
-      status: "scheduled",
-    });
-
-    revalidatePath("/dashboard/admin");
-    return { success: true };
-  } catch (error: any) {
-    return { error: error.message };
-  }
-}
-
-export async function deleteSession(sessionId: string) {
-  const client = await serverApi.auth();
-  try {
-    await client.delete(`/sessions/${sessionId}/`);
-    revalidatePath("/dashboard/admin");
-    return { success: true };
-  } catch (error: any) {
-    return { error: error.message };
-  }
-}
-
-export async function bulkDeleteSessions(ids: string[]) {
-  const client = await serverApi.auth();
-  try {
-    await client.post("/sessions/bulk-delete/", { ids });
     revalidatePath("/dashboard/admin");
     return { success: true };
   } catch (error: any) {
@@ -250,7 +210,7 @@ export async function activateAndEnroll(formData: FormData) {
           status: "active",
           category: "Academic",
           description: `Personalized tutoring for ${courseTitle}`,
-          slug: `${courseTitle.toLowerCase().replace(/ /g, '-')}-${Date.now()}`
+          slug: uniqueCourseSlug(courseTitle)
        });
     }
     
@@ -332,15 +292,58 @@ export async function updateCourseSchedules(courseId: string, schedules: { day: 
 
   const client = await serverApi.auth();
   try {
-    console.log('[updateCourseSchedules] Sending PATCH, schedules:', JSON.stringify(schedulesPayload));
     const result: any = await client.patch(`/courses/${courseId}/`, {
       schedules: schedulesPayload
     });
-    console.log('[updateCourseSchedules] Saved schedules:', JSON.stringify(result?.schedules));
     revalidatePath("/dashboard/admin");
     return { success: true, data: result };
   } catch (error: any) {
-    console.error('[updateCourseSchedules] ERROR:', error.message);
+    return { error: error.message };
+  }
+}
+
+// ── Student-Tutor Assignments ─────────────────────────────────────────────
+
+export async function createAssignment(formData: FormData) {
+  const studentId = formData.get("studentId") as string;
+  const tutorId = formData.get("tutorId") as string;
+
+  if (!studentId || !tutorId) {
+    return { error: "Both a student and a tutor are required." };
+  }
+
+  const client = await serverApi.auth();
+  try {
+    await client.post("/assignments/", {
+      student: studentId,
+      tutor: tutorId,
+      is_active: true,
+    });
+    revalidatePath("/dashboard/admin");
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}
+
+export async function toggleAssignment(assignmentId: string, isActive: boolean) {
+  const client = await serverApi.auth();
+  try {
+    await client.patch(`/assignments/${assignmentId}/`, { is_active: isActive });
+    revalidatePath("/dashboard/admin");
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}
+
+export async function deleteAssignment(assignmentId: string) {
+  const client = await serverApi.auth();
+  try {
+    await client.delete(`/assignments/${assignmentId}/`);
+    revalidatePath("/dashboard/admin");
+    return { success: true };
+  } catch (error: any) {
     return { error: error.message };
   }
 }

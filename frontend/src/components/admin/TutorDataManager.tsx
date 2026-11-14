@@ -4,7 +4,7 @@ import { useState } from "react";
 import { 
   GraduationCap, Mail, Phone, BookOpen, Search, X, 
   MoreVertical, ExternalLink, Users, Award, 
-  MessageCircle, Star, Activity, Clock, CheckCircle, AlertCircle
+  MessageCircle, Star, Activity, Clock, CheckCircle, AlertCircle, Globe
 } from "lucide-react";
 import { toggleOnboardingStatus } from "@/app/actions/admin";
 
@@ -147,15 +147,26 @@ export default function TutorDataManager({ tutors, courses, students }: TutorDat
               <div className="grid grid-cols-3 gap-4">
                 <StatBox label="Total Students" value={getTutorStats(selectedTutor.id).studentCount} icon={<Users size={14} />} />
                 <StatBox label="Active Courses" value={getTutorStats(selectedTutor.id).courseCount} icon={<BookOpen size={14} />} />
-                <StatBox label="Experience" value="Expert" icon={<Award size={14} />} />
+                <StatBox label="Status" value={selectedTutor.is_onboarded ? "Active" : "Waitlist"} icon={<Award size={14} />} />
               </div>
 
               {/* Detailed Info Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <DetailItem icon={<Mail size={16} />} label="Email Address" value={selectedTutor.email} />
                 <DetailItem icon={<Phone size={16} />} label="Phone Number" value={selectedTutor.phone || "Not provided"} />
+                <DetailItem icon={<Globe size={16} />} label="Country" value={selectedTutor.country || "N/A"} />
                 <DetailItem icon={<Clock size={16} />} label="Timezone" value={selectedTutor.timezone || "Africa/Lagos"} />
                 <DetailItem icon={<MessageCircle size={16} />} label="WhatsApp Community" value={selectedTutor.whatsapp_community_url ? "Linked" : "Not Linked"} />
+              </div>
+
+              {/* Bio */}
+              <div className="space-y-3 p-4 bg-section-alt rounded-2xl border border-border/50">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-muted flex items-center gap-2">
+                  <Award size={14} /> Tutor Bio
+                </h4>
+                <p className="text-sm leading-relaxed text-foreground/80">
+                  {selectedTutor.tutor_bio || <span className="italic opacity-50">No bio provided yet.</span>}
+                </p>
               </div>
 
               {/* Assignments Section */}
@@ -171,7 +182,7 @@ export default function TutorDataManager({ tutors, courses, students }: TutorDat
                         <p className="text-[10px] text-muted">{c.student_names?.join(", ") || "No students"}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                         <span className="px-2 py-1 bg-primary/10 text-primary text-[9px] font-bold rounded-lg uppercase">{c.subject}</span>
+                         <span className="px-2 py-1 bg-primary/10 text-primary text-[9px] font-bold rounded-lg uppercase">{c.category}</span>
                       </div>
                     </div>
                   ))}

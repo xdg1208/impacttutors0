@@ -1,37 +1,32 @@
-import { ChevronRight, CheckCircle2, ArrowLeft, Clock, Shield, Award } from "lucide-react";
+import { CheckCircle2, ChevronRight, Clock, Shield, Award, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getCourseBySlug } from "@/lib/courses";
 
-// Placeholder data generation for dynamic routes
-const getCourseData = (slug: string) => {
-  const courses: Record<string, { title: string; description: string; features: string[]; curriculum: string[] }> = {
-    "nigerian-languages": {
-      title: "Nigerian Languages (Yoruba, Igbo, Hausa)",
-      description: "Comprehensive 1-on-1 tutoring in the major Nigerian languages. We focus on speaking, writing, and cultural understanding.",
-      features: ["Fluent conversational skills", "Grammar and literature", "Cultural nuances", "Personalized pace"],
-      curriculum: ["Basics of Alphabets", "Sentence construction", "Tones and Accents", "Cultural heritage stories"],
-    },
-    "coding-for-kids": {
-      title: "Coding for Kids",
-      description: "Ignite your child's creativity with logical thinking and problem-solving through code. We teach modern languages in a fun way.",
-      features: ["Game development focus", "Logical reasoning", "Project-based learning", "Mentorship sessions"],
-      curriculum: ["Block-based coding (Scratch)", "Web basics (HTML/CSS)", "Introduction to Python", "Building your first game"],
-    },
-    "exam-prep": {
-      title: "Exam Preparation (WAEC, JAMB, NECO)",
-      description: "Strategic coaching designed to help students ace their national examinations with confidence.",
-      features: ["Past question focus", "Time management tips", "Subject-specific strategies", "Mock exams"],
-      curriculum: ["JAMB Use of English", "Mathematics intensive", "Science focus areas", "Arts & Social science prep"],
-    },
+type PageProps = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: PageProps) {
+  const { slug } = await params;
+  const course = getCourseBySlug(slug);
+  return {
+    title: course ? `${course.title} | Impact Tutors` : "Course Not Found | Impact Tutors",
+    description: course?.tagline ?? "Explore our 1-on-1 tutoring programs.",
   };
-  return courses[slug];
-};
+}
 
-export default function CourseDetail({ params }: { params: { slug: string } }) {
-  const course = getCourseData(params.slug);
+export default async function CourseDetail({ params }: PageProps) {
+  // Next 15+/16: params is a Promise and MUST be awaited before use.
+  const { slug } = await params;
+  const course = getCourseBySlug(slug);
 
   if (!course) {
     notFound();
+  }
+
+  // Legacy aliases redirect to the canonical URL (keeps indexed URLs
+  // working without duplicating content).
+  if (course.slug !== slug) {
+    redirect(`/courses/${course.slug}`);
   }
 
   return (
@@ -54,9 +49,9 @@ export default function CourseDetail({ params }: { params: { slug: string } }) {
             </div>
 
             <div className="space-y-8">
-              <h2 className="text-3xl font-bold">What you&apos;ll learn</h2>
+              <h2 className="text-3xl font-bold">What you'll learn</h2>
               <div className="grid sm:grid-cols-2 gap-4">
-                {course.features.map((feature: string) => (
+                {course.features.map((feature) => (
                   <div key={feature} className="flex items-center gap-3 p-4 glass rounded-2xl border-border">
                     <CheckCircle2 className="text-primary flex-shrink-0" size={24} />
                     <span className="font-semibold">{feature}</span>
@@ -68,10 +63,10 @@ export default function CourseDetail({ params }: { params: { slug: string } }) {
             <div className="space-y-8">
               <h2 className="text-3xl font-bold">Course Curriculum</h2>
               <div className="space-y-4">
-                {course.curriculum.map((item: string, index: number) => (
+                {course.curriculum.map((item, index) => (
                   <div key={item} className="flex items-start gap-6 group">
                     <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
-                      {String(index + 1).padStart(2, '0')}
+                      {String(index + 1).padStart(2, "0")}
                     </div>
                     <div>
                       <h4 className="text-lg font-bold group-hover:text-primary transition-colors">{item}</h4>
@@ -90,7 +85,7 @@ export default function CourseDetail({ params }: { params: { slug: string } }) {
                   <p className="text-sm font-bold uppercase tracking-widest text-primary">Mentorship Plan</p>
                   <p className="text-4xl font-black">1-on-1 Classes</p>
                 </div>
-                
+
                 <div className="space-y-4 pt-4">
                   <BenefitItem icon={<Clock size={20} />} text="Flexible Schedule" />
                   <BenefitItem icon={<Shield size={20} />} text="Verified Expert Tutors" />
@@ -98,10 +93,10 @@ export default function CourseDetail({ params }: { params: { slug: string } }) {
                 </div>
 
                 <Link
-                  href="/signup"
+                  href="/student/apply"
                   className="w-full py-5 bg-primary text-white rounded-2xl font-bold text-lg hover:shadow-xl hover:shadow-primary/20 transition-all flex items-center justify-center gap-2 group"
                 >
-                  Enroll Now
+                  Apply Now
                   <ChevronRight className="group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <p className="text-center text-xs text-muted font-medium">No hidden fees. Payments are discussed after tutor assignment.</p>

@@ -18,7 +18,9 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(max_length=10, choices=UserRole.choices, default=UserRole.STUDENT)
     full_name = models.CharField(max_length=255)
-    phone = models.CharField(max_length=20, blank=True, null=True)
+    # 50 chars to match the application forms (previously 20, which
+    # rejected longer but perfectly valid international numbers).
+    phone = models.CharField(max_length=50, blank=True, null=True)
     country = models.CharField(max_length=100, default='Nigeria')
     timezone = models.CharField(max_length=100, default='Africa/Lagos')
     
@@ -28,7 +30,8 @@ class Profile(models.Model):
     grade_level = models.CharField(max_length=100, blank=True, null=True)
     curriculum = models.CharField(max_length=100, blank=True, null=True)
     guardian_name = models.CharField(max_length=255, blank=True, null=True)
-    guardian_phone = models.CharField(max_length=20, blank=True, null=True)
+    # 50 chars to match the application forms (previously 20).
+    guardian_phone = models.CharField(max_length=50, blank=True, null=True)
     
     # Tutor specific fields
     tutor_bio = models.TextField(blank=True, null=True)
@@ -99,9 +102,20 @@ class Session(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ['-start_time']
+        # One session per (course, student, time slot): makes the recurring
+        # session sync idempotent (bulk_create with ignore_conflicts) and
+        # prevents duplicate rows under concurrent saves.
+        constraints = [
+            models.UniqueConstraint(
+                fields=['course', 'student', 'start_time'],
+                name='unique_course_student_start_time',
+            ),
+        ]
+
     def __str__(self):
-        title = self.course.title if self.course else "Unknown Course"
-        return f"{title} session on {self.start_time or 'TBD'}"
+        return f"{self.course.title} session on {self.start_time or 'TBD'}"
 
 class InviteCode(models.Model):
     code = models.CharField(max_length=20, unique=True, blank=True)
@@ -117,14 +131,25 @@ class InviteCode(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.code:
-            import random
+            # Registration codes are vetting tokens — use the cryptographic
+            # `secrets` module (not `random`). The unique constraint plus an
+            # IntegrityError retry guards against concurrent generation races.
+            import secrets
             import string
-            length = 8
-            while True:
-                new_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
-                if not InviteCode.objects.filter(code=new_code).exists():
-                    self.code = new_code
-                    break
+            from django.db import IntegrityError
+            alphabet = string.ascii_uppercase + string.digits
+            for _ in range(5):
+                new_code = ''.join(secrets.choice(alphabet) for _ in range(8))
+                if InviteCode.objects.filter(code=new_code).exists():
+                    continue
+                self.code = new_code
+                try:
+                    super().save(*args, **kwargs)
+                    return
+                except IntegrityError:
+                    # Collision under concurrency — regenerate and retry.
+                    self.code = None
+            raise RuntimeError('Failed to generate a unique invite code after 5 attempts')
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -206,15 +231,32 @@ class GlobalSetting(models.Model):
         return "Global Settings"
 
 class PasswordResetOTP(models.Model):
+    MAX_ATTEMPTS = 5
+
     email = models.EmailField()
     otp = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
     is_used = models.BooleanField(default=False)
+    # Counts failed verification attempts; the OTP is invalidated once it
+    # reaches MAX_ATTEMPTS, making brute-forcing the 6-digit space infeasible.
+    attempts = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['email', 'is_used']),
+        ]
 
     def is_expired(self):
         from django.utils import timezone
         from datetime import timedelta
         return timezone.now() > self.created_at + timedelta(minutes=10)
+
+    def register_failed_attempt(self):
+        """Increment the attempt counter; burn the OTP when the limit is hit."""
+        self.attempts += 1
+        if self.attempts >= self.MAX_ATTEMPTS:
+            self.is_used = True
+        self.save(update_fields=['attempts', 'is_used'])
 
     def __str__(self):
         return f"OTP for {self.email} ({'Used' if self.is_used else 'Active'})"

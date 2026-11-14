@@ -1,0 +1,49 @@
+# Render Blueprint for the Impact Tutors backend.
+# Create a "Blueprint Instance" on Render and point it at this file.
+# The production database (PostgreSQL) must be provided via DATABASE_URL —
+# set it in the Render dashboard (e.g. Supabase or any Postgres URL).
+
+services:
+  - type: web
+    name: impact-tutors-backend
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 2
+    healthCheckPath: /api/settings/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.x
+      - key: DEBUG
+        value: "False"
+      # Render generates a strong random value on first deploy.
+      - key: SECRET_KEY
+        generateValue: true
+      # Add your custom domain(s) here if you have one.
+      - key: ALLOWED_HOSTS
+        value: impact-tutors-backend.onrender.com
+      # REQUIRED: set your production Postgres URL in the Render dashboard.
+      - key: DATABASE_URL
+        sync: false
+      # Comma-separated list of allowed frontend origins (e.g. https://impact-tutors.vercel.app)
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      # Where admin notifications (applications/inquiries) are emailed.
+      - key: NOTIFICATION_EMAIL
+        sync: false
+      # Optional: Gmail SMTP fallback for OTP emails.
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      # Optional: Telegram bot notifications.
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      # Optional: SendPulse OTP email delivery.
+      - key: SENDPULSE_CLIENT_ID
+        sync: false
+      - key: SENDPULSE_CLIENT_SECRET
+        sync: false
+      - key: SENDPULSE_FROM_EMAIL
+        sync: false

@@ -2,16 +2,30 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, Star, Users, BookOpen, ShieldCheck, Globe, GraduationCap, Sparkles } from "lucide-react";
 import { cookies } from "next/headers";
-import { api } from "@/lib/api";
+import JsonLd from "@/components/seo/JsonLd";
 
 export default async function Home() {
   const cookieStore = await cookies();
-  const hasToken = cookieStore.get("access_token")?.value;
-  
-  // Quick user check for the "Get Started" vs "Dashboard" button
-  const user = hasToken ? { id: "authenticated" } : null;
+  const authenticated = Boolean(cookieStore.get("access_token")?.value);
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://impacttutors.com";
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    name: "Impact Tutors",
+    url: siteUrl,
+    description:
+      "Premium 1-on-1 online tutoring for K-12, adult learners, languages, coding, and music.",
+    email: "info@impacttutors.com.ng",
+    sameAs: [
+      "https://instagram.com/impacttutors12",
+      "https://facebook.com/ImpactTutorsOnlineAcademy",
+    ],
+  };
+
   return (
     <div className="relative overflow-hidden">
+      <JsonLd data={organizationSchema} />
       {/* ── Hero Section ── */}
       <section className="relative pt-28 pb-16 lg:pt-36 lg:pb-24 px-4 md:px-6 ">
         {/* Dot pattern background */}
@@ -41,10 +55,10 @@ export default async function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <Link
-                href={user ? "/dashboard" : "/student/apply"}
+                href={authenticated ? "/dashboard" : "/student/apply"}
                 className="w-full sm:w-auto px-8 py-4 bg-primary text-white rounded-xl text-base font-bold hover:bg-primary/90 transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 flex items-center justify-center gap-2 group"
               >
-                {user ? "View Dashboard" : "Become a Student"}
+                {authenticated ? "View Dashboard" : "Become a Student"}
                 <ChevronRight className="group-hover:translate-x-0.5 transition-transform duration-300" size={18} />
               </Link>
               <Link
@@ -168,14 +182,14 @@ export default async function Home() {
               description="Learn Python, Web Development, and Digital Literacy. Master the skills that define the future."
               icon={<BookOpen size={24} />}
               color="bg-accent"
-              href="/courses/coding"
+              href="/courses/coding-for-kids"
             />
             <CategoryCard 
               title="Music & Languages" 
               description="Explore Music classes or learn Yoruba, Igbo, and Hausa with native-speaking experts."
               icon={<ShieldCheck size={24} />}
               color="bg-slate-800 dark:bg-slate-600"
-              href="/courses/music-languages"
+              href="/courses/music"
             />
           </div>
 
@@ -225,8 +239,8 @@ export default async function Home() {
                     Science Subjects
                   </li>
                 </ul>
-                <Link href={user ? "/dashboard" : "/student/apply"} className="w-full py-4 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-primary/25 transition-all">
-                  {user ? "Go to Dashboard" : "Get Gold Plan"} <ChevronRight size={18} />
+                <Link href={authenticated ? "/dashboard" : "/student/apply"} className="w-full py-4 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-primary/25 transition-all">
+                  {authenticated ? "Go to Dashboard" : "Get Gold Plan"} <ChevronRight size={18} />
                 </Link>
               </div>
             </div>
@@ -258,8 +272,8 @@ export default async function Home() {
                     Language & Group Classes
                   </li>
                 </ul>
-                <Link href={user ? "/dashboard" : "/student/apply"} className="w-full py-4 bg-accent text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-accent/25 transition-all">
-                  {user ? "Go to Dashboard" : "Get Ruby Plan"} <ChevronRight size={18} />
+                <Link href={authenticated ? "/dashboard" : "/student/apply"} className="w-full py-4 bg-accent text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-accent/25 transition-all">
+                  {authenticated ? "Go to Dashboard" : "Get Ruby Plan"} <ChevronRight size={18} />
                 </Link>
               </div>
             </div>
@@ -321,10 +335,10 @@ export default async function Home() {
             </div>
 
             <Link
-              href={user ? "/dashboard" : "/student/apply"}
+              href={authenticated ? "/dashboard" : "/student/apply"}
               className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-xl font-bold transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 group"
             >
-              {user ? "Your Dashboard" : "Join Us"}
+              {authenticated ? "Your Dashboard" : "Join Us"}
               <ChevronRight className="group-hover:translate-x-0.5 transition-transform duration-300" size={18} />
             </Link>
           </div>
@@ -438,10 +452,10 @@ export default async function Home() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                 <Link
-                  href={user ? "/dashboard" : "/student/apply"}
+                  href={authenticated ? "/dashboard" : "/student/apply"}
                   className="px-8 py-4 bg-white text-primary rounded-xl text-base font-bold transition-all duration-300 hover:shadow-xl group flex items-center justify-center gap-2"
                 >
-                  {user ? "Go to My Dashboard" : "Start Learning Now"}
+                  {authenticated ? "Go to My Dashboard" : "Start Learning Now"}
                   <ChevronRight className="group-hover:translate-x-0.5 transition-transform duration-300" size={18} />
                 </Link>
                 <Link

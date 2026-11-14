@@ -138,7 +138,7 @@ export default function TutorApplyPage() {
                   type="text" 
                   required 
                   className="w-full px-5 py-3.5 bg-section border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm" 
-                  placeholder="John Doe"
+                  placeholder="Mary Chris"
                   value={formData.fullName}
                   onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                 />
